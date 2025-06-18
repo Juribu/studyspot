@@ -25,7 +25,7 @@ body {
 }
 
 .left-section{
-  flex: 3;
+  flex: 5;
   position: relative;
   display: flex;
   justify-content: center;
@@ -34,8 +34,7 @@ body {
 }
 
 .right-section{
-  background-color: azure;
-  flex: 1;
+  flex: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -43,6 +42,7 @@ body {
   height: 100%;
   gap: 20px;
   padding: 10px 0px;
+  margin-right: 54px;
 }
 
 #title{
@@ -51,27 +51,105 @@ body {
   left: 80px;
 }
 
-
 .center-display{
   text-align: center;
   background-color: green;
 }
 
+/* Pomodoro */
 .pomodoro-timer{
-  background-color: blue;
+  display: flex;
   width: 100%;
-  flex: 2;
+  padding: 16px ;
+  justify-content: center;
+  align-items: center;
+  margin: 75px 0 25px 0;
+  border-radius: 20px;
+  gap: 27px;
+  background-color: rgba(53, 53, 53, 0.4);
+  min-height: 196px;
 }
 
+.timer-left{
+  display: flex;
+  flex-direction: column;
+  flex: 3;
+}
+
+#vertical-line{
+  width: 0.5px;
+  height: 100%;
+  border-color: rgba(133, 133, 133, 0.4);
+
+}
+
+.timer-right{
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+  gap:16px;
+}
+
+.timer-right button{
+  width: 148px;
+  height: 40px;
+}
+
+
+#time{
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 68px;
+  text-align: center;
+}
+
+.timer-controls{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pomodoro-timer button{
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  background-color: transparent;
+  color: white;
+  border: 1px solid white;
+  padding: 8px 17.5px;
+  cursor: pointer;
+  border-radius: 36px;
+}
+
+
+/* button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+} */
+
+#timer-setting{
+  border: none;
+}
+
+#timer-setting img{
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+/* Music */
 .music-player{
   background-color: antiquewhite;
   width: 100%;
-  flex: 1;
-  
+  min-height: 160px;
 }
 
+/* Task list */
 .todo-list{
   background-color: yellow;
   width: 100%;
-  flex:3;
+  min-height: 200px;
+  max-height: 400px;
 }
