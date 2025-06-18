@@ -5,47 +5,79 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Study Spot</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet1" href="style1.css" />
 </head>
 
 <body>
-    <div class="container">
-        <div class="left-section">
-            <div id="title">StudySpot</div>
+    <div class="main-wrapper">
+        <div class="container">
+            <div class="left-section">
+                <div id="title">StudySpot</div>
 
-            <div class="center-display">
-                <div id="clock">12:00</div>
-                <div id="quote">"Strive for progress, not perfection"</div>
+                <div class="center-display">
+                    <div id="clock">12:00</div>
+                    <div id="quote">"Strive for progress, not perfection"</div>
+                </div>
             </div>
-        </div>
 
-        <div class="right-section">
-            <div class="pomodoro-timer">
-                <div class="timer-left">
-                    <h2 id="time">25:00</h2>
-                    <div class="timer-controls">
-                        <button id="start">Start</button>
-                        <button id="timer-setting">
-                            <img src="assets/icons/timer_settings.svg" alt="timer setting">
-                        </button>
+            <div class="right-section">
+                <div class="pomodoro-timer">
+                    <div class="timer-left">
+                        <h2 id="time">25:00</h2>
+                        <div class="timer-controls">
+                            <button id="start">Start</button>
+                            <button id="timer-setting">
+                                <img src="assets/icons/timer_settings.svg" alt="timer setting">
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr id="vertical-line">
+
+                    <div class="timer-right">
+                        <button id="pomodoro" class="active">Pomodoro</button>
+                        <button id="short-break">Short Break</button>
+                        <button id="long-break">Long Break</button>
+                    </div>
+
+                </div>
+                <div class="music-section">
+                    <div class="music-player">
+                        <img src="assets/images/lofi.png" alt="Lofi Girl" class="track-thumbnail" />
+
+                        <div class="track-details">
+                            <h4>Lofi Girl - beats to Study</h4>
+                            <div class="track-controls">
+                                <button id="prev"><img src="assets/icons/prev.svg" alt="Previous" /></button>
+                                <button id="play"><img src="assets/icons/play.svg" alt="Play" /></button>
+                                <button id="next"><img src="assets/icons/next.svg" alt="Next" /></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="music-taste">
+                        <button id="mood"><img src="assets/icons/mood.svg" alt="select mood"></button>
+                        <button id="genre"><img src="assets/icons/sound.svg" alt="select sound"></button>
                     </div>
                 </div>
-
-                <hr id="vertical-line">
-
-                <div class="timer-right">
-                    <button id="pomodoro">Pomodoro</button>
-                    <button id="short-break">Short Break</button>
-                    <button id="long-break">Long Break</button>
-                </div>
-
+                <div class="todo-list"></div>
             </div>
-            <div class="music-player"></div>
-            <div class="todo-list"></div>
-        </div>
 
+        </div>
+        <script src="script.js"></script>
+
+        <div class="bottom-section">
+            <button class="full-screen"><img src="assets/icons/fullscreen.svg"
+                    alt="change to full full-screen"></button>
+        </div>
     </div>
-    <script src="script.js"></script>
 </body>
 
 </html>

@@ -2,7 +2,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins";
+  font-family: "Poppins", sans-serif;;
+}
+
+h4{
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  font-style: normal;
 }
 
 body {
@@ -12,16 +19,32 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+}
+
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
   position: relative;
 }
+
 .container{
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100vw;
-  height: 100vh;
+  height: 95%;
   flex-wrap: wrap;
+}
+
+.bottom-section{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 5%;
+  margin-right: 54px;
+  margin-bottom: 24px;
 }
 
 .left-section{
@@ -59,7 +82,6 @@ body {
 /* Pomodoro */
 .pomodoro-timer{
   display: flex;
-  width: 100%;
   padding: 16px ;
   justify-content: center;
   align-items: center;
@@ -67,7 +89,9 @@ body {
   border-radius: 20px;
   gap: 27px;
   background-color: rgba(53, 53, 53, 0.4);
-  min-height: 196px;
+  width: 100%;
+  height: auto;
+  min-height: 160px;
 }
 
 .timer-left{
@@ -95,10 +119,16 @@ body {
   height: 40px;
 }
 
+.timer-right button.active{
+  background-color: white;
+  color: black;
+}
+
 
 #time{
   width: 100%;
   font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
   font-size: 68px;
   text-align: center;
@@ -108,29 +138,37 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+}
+
+#start{
+  width: 90px;
+  height: 40px;
+  text-align: center;
 }
 
 .pomodoro-timer button{
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 20px;
-  background-color: transparent;
   color: white;
   border: 1px solid white;
   padding: 8px 17.5px;
-  cursor: pointer;
   border-radius: 36px;
 }
 
+button{
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
 
-/* button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: background-color 0.2s ease;
-} */
+button:hover {
+  transform: translateY(-1px);
+}
 
 #timer-setting{
   border: none;
+  border-radius: 50%;
 }
 
 #timer-setting img{
@@ -140,16 +178,80 @@ body {
 }
 
 /* Music */
-.music-player{
-  background-color: antiquewhite;
+.music-section{
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.music-player {
+  display: flex;
+  align-items: center;
+  background-color: rgba(53, 53, 53, 0.4);
+  border-radius: 16px;
+  padding: 16px;
+
   width: 100%;
-  min-height: 160px;
+}
+
+.music-taste{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.track-thumbnail{
+  width: 124px;
+  height: 124px;
+  object-fit: cover;
+}
+
+.track-details{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.track-title{
+  line-height: 1.2;
+}
+
+.track-controls{
+  display: flex;
+  gap: 20px;
+}
+
+.track-controls button {
+  width: auto;
+  height: auto;
+  border: none;
+  border-radius: 50%;
+}
+
+.track-controls button img {
+  width: 26px;
+  height: 26px;
+}
+
+#play img{
+  width: 54px;
+  height: 54px;
+}
+
+.music-taste button{
+  width: 75px;
+  height: 75px;
+  border: none;
 }
 
 /* Task list */
 .todo-list{
   background-color: yellow;
+  border-radius: 20px;
   width: 100%;
   min-height: 200px;
   max-height: 400px;
 }
+
