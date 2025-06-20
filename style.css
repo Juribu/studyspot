@@ -2,11 +2,26 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;;
+  font-family: 'Inter', sans-serif;
+}
+
+h1{
+  font-size: clamp(120px, 15vw, 200px);
+  font-weight: bold;
+}
+
+h2{
+  font-size: clamp(48px, 6vw, 68px);
+  font-weight: 600;
+}
+
+h3{
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: bold;
 }
 
 h4{
-  font-family: 'Inter', sans-serif;
+
   font-size: 20px;
   font-weight: 500;
   font-style: normal;
@@ -26,6 +41,8 @@ body {
   flex-direction: column;
   height: 100%;
   width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
   position: relative;
 }
 
@@ -33,7 +50,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100vw;
+  width: 100%;
   height: 95%;
   flex-wrap: wrap;
 }
@@ -76,13 +93,12 @@ body {
 
 .center-display{
   text-align: center;
-  background-color: green;
 }
 
 /* Pomodoro */
 .pomodoro-timer{
   display: flex;
-  padding: 16px ;
+  padding: 16px;
   justify-content: center;
   align-items: center;
   margin: 75px 0 25px 0;
@@ -90,8 +106,10 @@ body {
   gap: 27px;
   background-color: rgba(53, 53, 53, 0.4);
   width: 100%;
+  max-width: clamp(300px, 40vw, 420px);
   height: auto;
   min-height: 160px;
+  box-sizing: border-box;
 }
 
 .timer-left{
@@ -115,8 +133,8 @@ body {
 }
 
 .timer-right button{
-  width: 148px;
-  height: 40px;
+  width: clamp(120px, 12vw, 160px);
+  height: clamp(36px, 4vh, 48px);
 }
 
 .timer-right button.active{
@@ -127,10 +145,7 @@ body {
 
 #time{
   width: 100%;
-  font-family: 'Inter', sans-serif;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  font-size: 68px;
   text-align: center;
 }
 
@@ -141,19 +156,23 @@ body {
 }
 
 #start{
-  width: 90px;
-  height: 40px;
+  width: clamp(70px, 8vw, 100px);
+  height: clamp(36px, 4vh, 48px);
   text-align: center;
 }
 
 .pomodoro-timer button{
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  font-size: 20px;
+  font-size: clamp(16px, 1.5vw, 20px);
   color: white;
   border: 1px solid white;
-  padding: 8px 17.5px;
+  padding: clamp(6px, 0.8vw, 10px) clamp(12px, 1.5vw, 20px);
   border-radius: 36px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button{
@@ -172,37 +191,50 @@ button:hover {
 }
 
 #timer-setting img{
-  width: 36px;
-  height: 36px;
+  width: clamp(28px, 3vw, 40px);
+  height: clamp(28px, 3vw, 40px);
   object-fit: contain;
 }
 
 /* Music */
 .music-section{
   display: flex;
-  gap: 20px;
+  flex-direction: row;
+  gap: clamp(16px, 2vw, 24px);
   align-items: stretch;
+  width: 100%;
+  max-width: clamp(300px, 40vw, 420px);
+  border-radius: 20px;
+  box-sizing: border-box;
 }
 
 .music-player {
   display: flex;
   align-items: center;
-  background-color: rgba(53, 53, 53, 0.4);
   border-radius: 16px;
-  padding: 16px;
-
-  width: 100%;
+  padding: clamp(12px, 1.5vw, 20px);
+  background-color: rgba(53, 53, 53, 0.4);
+  flex: 1;
+  gap: clamp(12px, 1.5vw, 16px);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .music-taste{
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  gap: clamp(12px, 1.5vw, 16px);
+  width: clamp(60px, 6vw, 75px);
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 .track-thumbnail{
-  width: 124px;
-  height: 124px;
+  width: clamp(80px, 8vw, 130px);
+  height: clamp(80px, 8vw, 130px);
   object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .track-details{
@@ -210,17 +242,21 @@ button:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: clamp(8px, 1vw, 16px);
   flex: 1;
+  min-width: 0;
 }
 
 .track-title{
   line-height: 1.2;
+  text-align: center;
+  font-size: clamp(14px, 1.2vw, 16px);
 }
 
 .track-controls{
   display: flex;
-  gap: 20px;
+  gap: clamp(12px, 1.5vw, 24px);
+  align-items: center;
 }
 
 .track-controls button {
@@ -231,27 +267,552 @@ button:hover {
 }
 
 .track-controls button img {
-  width: 26px;
-  height: 26px;
+  width: clamp(20px, 2vw, 28px);
+  height: clamp(20px, 2vw, 28px);
 }
 
 #play img{
-  width: 54px;
-  height: 54px;
+  width: clamp(40px, 4vw, 56px);
+  height: clamp(40px, 4vw, 56px);
 }
 
 .music-taste button{
-  width: 75px;
-  height: 75px;
+  width: clamp(60px, 6vw, 75px);
+  height: clamp(60px, 6vw, 75px);
   border: none;
+  background-color: transparent;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.music-taste button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.music-taste button img {
+  width: clamp(60px, 6vw, 75px);
+  height: clamp(60px, 6vw, 75px);
+  object-fit: contain;
+  filter: brightness(0.9);
 }
 
 /* Task list */
 .todo-list{
-  background-color: yellow;
+  background-color: rgba(53, 53, 53, 0.4);
   border-radius: 20px;
   width: 100%;
-  min-height: 200px;
-  max-height: 400px;
+  max-width: clamp(300px, 40vw, 420px);
+  min-height: clamp(200px, 25vh, 280px);
+  max-height: clamp(300px, 35vh, 450px);
+  padding: clamp(12px, 1.5vw, 20px);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.todo-header {
+  margin-bottom: clamp(12px, 1.5vw, 20px);
+}
+
+#add-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 12px 0px 12px 0px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1;
+}
+
+#add-task span {
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+#add-task:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
+
+.task-separator {
+  border: none;
+  height: 1px;
+  background-color: white;
+  width: 100%;
+}
+
+.todo-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 200px;
+  min-height: 120px;
+  padding-right: 4px;
+}
+
+.todo-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.todo-items::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.todo-items::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.todo-items::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  background-color: transparent;
+  cursor: pointer;
+  appearance: none;
+  position: relative;
+}
+
+.task-checkbox:checked {
+  background-color: white;
+  border-color: white;
+}
+
+.task-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: black;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.task-label {
+  flex: 1;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.task-checkbox:checked + .task-label {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-options {
+  background-color: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+  position: relative;
+}
+
+.task-options:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: none;
+}
+
+.task-options-container {
+  position: relative;
+}
+
+.task-dropdown {
+  position: fixed;
+  background-color: rgba(40, 40, 40, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 4px 0;
+  min-width: 100px;
+  z-index: 2000;
+  display: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.task-dropdown.show {
+  display: block;
+}
+
+.task-dropdown button {
+  width: 100%;
+  padding: 8px 16px;
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.task-dropdown button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
+
+.task-dropdown .delete-btn:hover {
+  background-color: rgba(255, 0, 0, 0.2);
+  color: #ff6b6b;
+}
+
+/* Mobile and Tablet Media Queries */
+
+/* Tablet Portrait - 768px and below */
+@media screen and (max-width: 768px) {
+  .main-wrapper {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+
+  .container {
+    flex-direction: column;
+    height: auto;
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  .left-section {
+    flex: none;
+    width: 100%;
+    height: auto;
+    order: 1;
+  }
+
+  .right-section {
+    flex: none;
+    width: 100%;
+    height: auto;
+    margin-right: 0;
+    order: 2;
+  }
+
+  #title {
+    position: static;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: 120px;
+  }
+
+  h2 {
+    font-size: 48px;
+  }
+
+  h3 {
+    font-size: 28px;
+  }
+
+  .center-display {
+    padding: 20px 0;
+  }
+
+  .pomodoro-timer {
+    margin: 20px 0;
+    min-height: 140px;
+    padding: 24px;
+    gap: 12px;
+  }
+
+  .bottom-section {
+    margin-right: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+/* Mobile Landscape - 600px and below */
+@media screen and (max-width: 600px) {
+  h1 {
+    font-size: 80px;
+  }
+
+  h2 {
+    font-size: 36px;
+  }
+
+  h3 {
+    font-size: 24px;
+  }
+
+  .pomodoro-timer {
+    flex-direction: column;
+    gap: 16px;
+    min-height: auto;
+    padding: 20px 24px;
+  }
+
+  .timer-left {
+    flex: none;
+    text-align: center;
+  }
+
+  .timer-right {
+    flex: none;
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .timer-right button {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 16px;
+  }
+
+  #vertical-line {
+    display: none;
+  }
+
+  .music-section {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .music-player {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .track-thumbnail {
+    width: 100px;
+    height: 100px;
+  }
+
+  .track-controls {
+    gap: 16px;
+  }
+
+  .music-taste {
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .music-taste button {
+    width: 60px;
+    height: 60px;
+  }
+
+  .todo-list {
+    min-height: 150px;
+    max-height: 300px;
+  }
+}
+
+/* Mobile Portrait - 480px and below */
+@media screen and (max-width: 480px) {
+  .main-wrapper {
+    padding: 0 12px;
+  }
+
+  h1 {
+    font-size: 64px;
+  }
+
+  h2 {
+    font-size: 32px;
+  }
+
+  h3 {
+    font-size: 20px;
+  }
+
+  h4 {
+    font-size: 18px;
+  }
+
+  .container {
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .pomodoro-timer {
+    padding: 16px 12px;
+    max-width: 100%;
+  }
+
+  .music-section {
+    max-width: 100%;
+  }
+
+  .todo-list {
+    max-width: 100%;
+  }
+
+  .timer-right {
+    gap: 6px;
+  }
+
+  .timer-right button {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  #start {
+    width: 70px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .track-thumbnail {
+    width: 80px;
+    height: 80px;
+  }
+
+  .track-controls button img {
+    width: 22px;
+    height: 22px;
+  }
+
+  #play img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .music-taste button {
+    width: 50px;
+    height: 50px;
+  }
+
+  .bottom-section {
+    margin-right: 12px;
+    margin-bottom: 12px;
+  }
+}
+
+/* Small Mobile - 360px and below */
+@media screen and (max-width: 360px) {
+  .main-wrapper {
+    padding: 0 16px;
+  }
+
+  .container {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  .left-section {
+    width: 100%;
+    order: 1;
+    text-align: center;
+  }
+
+  .right-section {
+    width: 100%;
+    order: 2;
+    margin-right: 0;
+    align-items: center;
+  }
+
+  #title {
+    position: static;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: 48px;
+  }
+
+  h2 {
+    font-size: 28px;
+  }
+
+  .center-display {
+    margin-bottom: 20px;
+  }
+
+  .pomodoro-timer {
+    max-width: 100%;
+    margin: 16px 0;
+    flex-direction: row;
+    gap: 20px;
+    padding: 20px 16px;
+  }
+
+  .timer-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .timer-right {
+    flex: none;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .timer-right button {
+    width: 120px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  #vertical-line {
+    width: px;
+    height: 100%;
+    border-color: rgba(133, 133, 133, 0.4);
+  }
+
+  .music-section {
+    max-width: 100%;
+  }
+
+  .todo-list {
+    max-width: 100%;
+  }
+
+  .track-controls {
+    gap: 12px;
+  }
 }
 

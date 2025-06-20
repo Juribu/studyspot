@@ -1,82 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<!-- 
+    StudySpot - A Productivity App
+    This is the main HTML file that creates the structure of our study app
+    It includes a clock, pomodoro timer, music player, and todo list
+-->
+
 <head>
+    <!-- Basic page setup -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Study Spot</title>
 
+    <!-- Font loading for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Inter font from Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-        rel="stylesheet">
+        rel="styleshee">
 
+    <!-- Our custom styles -->
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet1" href="style1.css" />
 </head>
 
 <body>
+    <!-- Main container that holds everything -->
     <div class="main-wrapper">
         <div class="container">
+            <!-- Left side: App title and current time -->
             <div class="left-section">
+                <!-- App name/logo -->
                 <div id="title">StudySpot</div>
 
+                <!-- Current time and motivational quote -->
                 <div class="center-display">
-                    <div id="clock">12:00</div>
-                    <div id="quote">"Strive for progress, not perfection"</div>
+                    <h1 id="clock">12:00</h1> <!-- Real time will be shown here -->
+                    <h3 id="quote">"Strive for progress, not perfection"</h3>
                 </div>
             </div>
 
+            <!-- Right side: All the productivity tools -->
             <div class="right-section">
+                <!-- Pomodoro Timer Section -->
                 <div class="pomodoro-timer">
+                    <!-- Left side of timer: display and controls -->
                     <div class="timer-left">
-                        <h2 id="time">25:00</h2>
+                        <h2 id="time">25:00</h2> <!-- Timer countdown display -->
                         <div class="timer-controls">
-                            <button id="start">Start</button>
+                            <button id="start">Start</button> <!-- Start/Stop button -->
                             <button id="timer-setting">
                                 <img src="assets/icons/timer_settings.svg" alt="timer setting">
                             </button>
                         </div>
                     </div>
 
+                    <!-- Divider line between timer sections -->
                     <hr id="vertical-line">
 
+                    <!-- Right side of timer: mode selection buttons -->
                     <div class="timer-right">
-                        <button id="pomodoro" class="active">Pomodoro</button>
-                        <button id="short-break">Short Break</button>
-                        <button id="long-break">Long Break</button>
+                        <button id="pomodoro" class="active">Pomodoro</button> <!-- 25 min work -->
+                        <button id="short-break">Short Break</button> <!-- 5 min break -->
+                        <button id="long-break">Long Break</button> <!-- 15 min break -->
                     </div>
 
                 </div>
+                
+                <!-- Music Player Section -->
                 <div class="music-section">
+                    <!-- Main music player with song info and controls -->
                     <div class="music-player">
+                        <!-- Album/song artwork -->
                         <img src="assets/images/lofi.png" alt="Lofi Girl" class="track-thumbnail" />
 
+                        <!-- Song title and playback controls -->
                         <div class="track-details">
-                            <h4>Lofi Girl - beats to Study</h4>
+                            <h4>Lofi Girl - beats to Study</h4> <!-- Song title -->
                             <div class="track-controls">
+                                <!-- Music control buttons -->
                                 <button id="prev"><img src="assets/icons/prev.svg" alt="Previous" /></button>
                                 <button id="play"><img src="assets/icons/play.svg" alt="Play" /></button>
                                 <button id="next"><img src="assets/icons/next.svg" alt="Next" /></button>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Music preference buttons -->
                     <div class="music-taste">
-                        <button id="mood"><img src="assets/icons/mood.svg" alt="select mood"></button>
-                        <button id="genre"><img src="assets/icons/sound.svg" alt="select sound"></button>
+                        <button id="mood"><img src="assets/icons/mood.svg" alt="select mood"></button> <!-- Choose mood -->
+                        <button id="genre"><img src="assets/icons/sound.svg" alt="select sound"></button> <!-- Choose genre -->
                     </div>
                 </div>
-                <div class="todo-list"></div>
+                
+                <!-- Todo List Section -->
+                <div class="todo-list">
+                    <!-- Header with add task button -->
+                    <div class="todo-header">
+                        <button id="add-task">
+                            <span>+</span>
+                            Add New Task
+                        </button>
+                        <!-- Separator line below add task button -->
+                        <hr class="task-separator">
+                    </div>
+                    
+                    <!-- Container for all todo items -->
+                    <div class="todo-items">
+                        <!-- Sample task 1 (can be deleted) -->
+                        <div class="todo-item">
+                            <input type="checkbox" id="task1" class="task-checkbox"> <!-- Check when done -->
+                            <label for="task1" class="task-label">Task</label> <!-- Task name -->
+                            <!-- Three dots menu for each task -->
+                            <div class="task-options-container">
+                                <button class="task-options">⋮</button> <!-- Three dots button -->
+                                <!-- Dropdown menu that appears when you click three dots -->
+                                <div class="task-dropdown">
+                                    <button class="edit-btn">Edit</button> <!-- Edit task name -->
+                                    <button class="delete-btn">Delete</button> <!-- Delete task -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sample task 2 (can be deleted) -->
+                        <div class="todo-item">
+                            <input type="checkbox" id="task2" class="task-checkbox" checked>
+                            <label for="task2" class="task-label">Completed Task</label>
+                            <div class="task-options-container">
+                                <button class="task-options">⋮</button>
+                                <div class="task-dropdown">
+                                    <button class="edit-btn">Edit</button>
+                                    <button class="delete-btn">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
-        <script src="script.js"></script>
 
+        <!-- Bottom section with fullscreen button -->
         <div class="bottom-section">
             <button class="full-screen"><img src="assets/icons/fullscreen.svg"
                     alt="change to full full-screen"></button>
         </div>
+        
+        
+        <!-- JavaScript files - Load in the right order! -->
+        <!-- Load modules first, then initialize the app -->
+        <script src="js/timer.js"></script>     <!-- Pomodoro timer functionality -->
+        <script src="js/tasks.js"></script>     <!-- Todo list functionality -->
+        <script src="js/clock.js"></script>     <!-- Real-time clock display -->
+        <script src="js/music.js"></script>     <!-- Music player functionality -->
+        <script src="js/main.js"></script>      <!-- Starts everything up -->
     </div>
 </body>
 
