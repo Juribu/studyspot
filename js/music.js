@@ -46,7 +46,7 @@ const MusicModule = (function() {
     iframe.style.display = 'none'; // Hide the player
     
     // Your specific SoundCloud playlist URL
-    const playlistUrl = 'https://soundcloud.com/lofi_girl/sets/sleep-lofi';
+    const playlistUrl = 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus';
     iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(playlistUrl)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false`;
     
     // Add to page
