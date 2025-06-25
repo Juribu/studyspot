@@ -9,12 +9,20 @@ const MusicModule = (function() {
     playBtn: document.getElementById('play'),
     prevBtn: document.getElementById('prev'),
     nextBtn: document.getElementById('next'),
-    trackTitle: document.querySelector('.track-details h4')
+    trackTitle: document.querySelector('.track-details h4'),
+    genreBtn: document.getElementById('genre'),
+    genreDropdown: document.querySelector('.genre-dropdown'),
+    genreOptions: document.querySelectorAll('.genre-option'),
+    moodBtn: document.getElementById('mood'),
+    moodDropdown: document.querySelector('.mood-dropdown'),
+    moodOptions: document.querySelectorAll('.mood-option')
   };
 
   /** SoundCloud player widget */
   let widget = null;
   let isPlaying = false;
+  let currentGenre = 'lofi'; // Default genre
+  let currentMood = 'focus'; // Default mood
 
   /**
    * Updates the play button icon
@@ -135,6 +143,113 @@ const MusicModule = (function() {
     widget.next();
   };
 
+  /**
+   * Toggles genre dropdown visibility
+   */
+  const toggleGenreDropdown = () => {
+    if (elements.genreDropdown) {
+      elements.genreDropdown.classList.toggle('show');
+    }
+  };
+
+  /**
+   * Toggles mood dropdown visibility
+   */
+  const toggleMoodDropdown = () => {
+    if (elements.moodDropdown) {
+      elements.moodDropdown.classList.toggle('show');
+    }
+  };
+
+  /**
+   * Handles genre selection
+   * @param {string} genre - Selected genre
+   */
+  const selectGenre = (genre) => {
+    currentGenre = genre;
+    
+    // Remove active class from all genre options first
+    elements.genreOptions.forEach(option => {
+      option.classList.remove('active');
+    });
+    
+    // Remove active class from all mood options (mutual exclusivity)
+    elements.moodOptions.forEach(option => {
+      option.classList.remove('active');
+    });
+    
+    // Add active class only to the selected genre option
+    const selectedOption = document.querySelector(`.genre-option[data-genre="${genre}"]`);
+    if (selectedOption) {
+      selectedOption.classList.add('active');
+    }
+    
+    // Hide dropdown
+    if (elements.genreDropdown) {
+      elements.genreDropdown.classList.remove('show');
+    }
+    
+    // Update track title to show selected genre
+    if (elements.trackTitle) {
+      elements.trackTitle.textContent = `Lofi Girl - ${genre.charAt(0).toUpperCase() + genre.slice(1)} - music to focus/study to`;
+    }
+    
+    console.log(`Genre changed to: ${genre}`);
+  };
+
+  /**
+   * Handles mood selection
+   * @param {string} mood - Selected mood
+   */
+  const selectMood = (mood) => {
+    currentMood = mood;
+    
+    // Remove active class from all mood options first
+    elements.moodOptions.forEach(option => {
+      option.classList.remove('active');
+    });
+    
+    // Remove active class from all genre options (mutual exclusivity)
+    elements.genreOptions.forEach(option => {
+      option.classList.remove('active');
+    });
+    
+    // Add active class only to the selected mood option
+    const selectedOption = document.querySelector(`.mood-option[data-mood="${mood}"]`);
+    if (selectedOption) {
+      selectedOption.classList.add('active');
+    }
+    
+    // Hide dropdown
+    if (elements.moodDropdown) {
+      elements.moodDropdown.classList.remove('show');
+    }
+    
+    // Update track title to show selected mood
+    if (elements.trackTitle) {
+      elements.trackTitle.textContent = `Lofi Girl - ${mood.charAt(0).toUpperCase() + mood.slice(1)} vibes - music to focus/study to`;
+    }
+    
+    console.log(`Mood changed to: ${mood}`);
+  };
+
+  /**
+   * Closes dropdown when clicking outside
+   */
+  const handleClickOutside = (event) => {
+    if (!event.target.closest('.genre-container')) {
+      if (elements.genreDropdown) {
+        elements.genreDropdown.classList.remove('show');
+      }
+    }
+
+    if (!event.target.closest('.mood-container')) {
+      if (elements.moodDropdown) {
+        elements.moodDropdown.classList.remove('show');
+      }
+    }
+  };
+
   return {
     /**
      * Initializes the music module
@@ -155,6 +270,35 @@ const MusicModule = (function() {
       if (elements.nextBtn) {
         elements.nextBtn.addEventListener('click', nextTrack);
       }
+
+      // Genre button event
+      if (elements.genreBtn) {
+        elements.genreBtn.addEventListener('click', toggleGenreDropdown);
+      }
+
+      // Genre option events
+      elements.genreOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          const genre = option.dataset.genre;
+          selectGenre(genre);
+        });
+      });
+
+      // Mood button event
+      if (elements.moodBtn) {
+        elements.moodBtn.addEventListener('click', toggleMoodDropdown);
+      }
+
+      // Mood option events
+      elements.moodOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          const mood = option.dataset.mood;
+          selectMood(mood);
+        });
+      });
+
+      // Close dropdown if clicked outside
+      document.addEventListener('click', handleClickOutside);
 
       console.log('Music module initialized');
     }
