@@ -24,6 +24,17 @@ const MusicModule = (function() {
   let currentGenre = 'lofi'; // Default genre
   let currentMood = 'focus'; // Default mood
 
+  /** Playlist URLs for different genres */
+  const playlistUrls = {
+    lofi: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
+    jazz: 'https://soundcloud.com/relaxcafemusic/sets/10-hours-jazz-relaxing-music',
+    ambient: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
+    piano: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
+    acoustic: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
+    electric: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
+    nature: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus'
+  };
+
   /**
    * Updates the play button icon
    * @param {boolean} playing - Whether audio is playing
@@ -41,8 +52,15 @@ const MusicModule = (function() {
 
   /**
    * Creates SoundCloud player widget
+   * @param {string} playlistUrl - The URL of the playlist to load
    */
-  const createSoundCloudPlayer = () => {
+  const createSoundCloudPlayer = (playlistUrl = playlistUrls.lofi) => {
+    // Remove existing iframe if it exists
+    const existingIframe = document.getElementById('soundcloud-player');
+    if (existingIframe) {
+      existingIframe.remove();
+    }
+
     // Create hidden iframe for SoundCloud player
     const iframe = document.createElement('iframe');
     iframe.id = 'soundcloud-player';
@@ -53,8 +71,6 @@ const MusicModule = (function() {
     iframe.allow = 'autoplay';
     iframe.style.display = 'none'; // Hide the player
     
-    // Your specific SoundCloud playlist URL
-    const playlistUrl = 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus';
     iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(playlistUrl)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false`;
     
     // Add to page
@@ -120,11 +136,14 @@ const MusicModule = (function() {
       return;
     }
 
-    if (isPlaying) {
-      widget.pause();
-    } else {
-      widget.play();
-    }
+    // Add a small delay to ensure widget is fully ready after genre switch
+    setTimeout(() => {
+      if (isPlaying) {
+        widget.pause();
+      } else {
+        widget.play();
+      }
+    }, 100);
   };
 
   /**
@@ -132,7 +151,9 @@ const MusicModule = (function() {
    */
   const previousTrack = () => {
     if (!widget) return;
-    widget.prev();
+    setTimeout(() => {
+      widget.prev();
+    }, 100);
   };
 
   /**
@@ -140,7 +161,9 @@ const MusicModule = (function() {
    */
   const nextTrack = () => {
     if (!widget) return;
-    widget.next();
+    setTimeout(() => {
+      widget.next();
+    }, 100);
   };
 
   /**
@@ -161,6 +184,67 @@ const MusicModule = (function() {
     }
   };
 
+  /**
+   * Loads a new playlist for the selected genre
+   * @param {string} genre - The genre to load
+   */
+  const loadPlaylistForGenre = (genre) => {
+    const playlistUrl = playlistUrls[genre] || playlistUrls.lofi;
+    
+    // Reset playing state when switching
+    isPlaying = false;
+    updatePlayButton(false);
+    
+    // Create new player with the selected playlist
+    const iframe = createSoundCloudPlayer(playlistUrl);
+    
+    // Reinitialize widget with new iframe
+    if (window.SC && window.SC.Widget) {
+      widget = SC.Widget(iframe);
+      
+      // Set up event listeners for the new widget
+      widget.bind(SC.Widget.Events.READY, () => {
+        console.log(`SoundCloud player ready with ${genre} playlist`);
+        
+        // Reset playing state once widget is ready
+        isPlaying = false;
+        updatePlayButton(false);
+        
+        // Listen for play/pause events
+        widget.bind(SC.Widget.Events.PLAY, () => {
+          isPlaying = true;
+          updatePlayButton(true);
+        });
+        
+        widget.bind(SC.Widget.Events.PAUSE, () => {
+          isPlaying = false;
+          updatePlayButton(false);
+        });
+        
+        widget.bind(SC.Widget.Events.FINISH, () => {
+          isPlaying = false;
+          updatePlayButton(false);
+        });
+        
+        // Update track info when track changes
+        widget.bind(SC.Widget.Events.PLAY_PROGRESS, () => {
+          widget.getCurrentSound((sound) => {
+            if (sound && elements.trackTitle) {
+              // Only update title if we're not showing the genre format
+              if (!elements.trackTitle.textContent.includes(' by ')) {
+                elements.trackTitle.textContent = sound.title;
+              }
+            }
+          });
+        });
+      });
+      
+      // Handle widget load errors
+      widget.bind(SC.Widget.Events.ERROR, () => {
+        console.error(`Error loading ${genre} playlist`);
+      });
+    }
+  };
   /**
    * Handles genre selection
    * @param {string} genre - Selected genre
@@ -189,9 +273,16 @@ const MusicModule = (function() {
       elements.genreDropdown.classList.remove('show');
     }
     
+    // Load the appropriate playlist for the selected genre
+    loadPlaylistForGenre(genre);
+    
     // Update track title to show selected genre
     if (elements.trackTitle) {
-      elements.trackTitle.textContent = `Lofi Girl - ${genre.charAt(0).toUpperCase() + genre.slice(1)} - music to focus/study to`;
+      if (genre === 'jazz') {
+        elements.trackTitle.innerHTML = `Jazz<br><span class="author-name">RelaxCafeMusic</span>`;
+      } else {
+        elements.trackTitle.innerHTML = `${genre.charAt(0).toUpperCase() + genre.slice(1)}<br><span class="author-name">Lofi Girl</span>`;
+      }
     }
     
     console.log(`Genre changed to: ${genre}`);
