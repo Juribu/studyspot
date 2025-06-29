@@ -23,6 +23,122 @@ const TimerModule = (function() {
   let timeLeft = timerStates.pomodoro;
   let isRunning = false;
   let interval;
+  let alarmAudio = null;
+
+  /**
+   * Creates and shows the timer popup when time is up
+   */
+  const showTimerPopup = () => {
+    // Create popup overlay
+    const popup = document.createElement('div');
+    popup.id = 'timer-popup';
+    popup.innerHTML = `
+      <div class="popup-overlay">
+        <div class="popup-content">
+          <h2>⏰ Time's Up!</h2>
+          <p>Your timer session has ended.</p>
+          <button id="popup-ok" class="popup-button">OK</button>
+        </div>
+      </div>
+    `;
+
+    // Add styles
+    popup.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+
+    const overlay = popup.querySelector('.popup-overlay');
+    overlay.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+
+    const content = popup.querySelector('.popup-content');
+    content.style.cssText = `
+      background-color: rgba(53, 53, 53, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 40px 60px;
+      text-align: center;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    `;
+
+    const title = popup.querySelector('h2');
+    title.style.cssText = `
+      margin: 0 0 16px 0;
+      font-size: 28px;
+      font-weight: 600;
+    `;
+
+    const message = popup.querySelector('p');
+    message.style.cssText = `
+      margin: 0 0 24px 0;
+      font-size: 16px;
+      opacity: 0.9;
+    `;
+
+    const button = popup.querySelector('.popup-button');
+    button.style.cssText = `
+      background-color: white;
+      color: black;
+      border: none;
+      border-radius: 36px;
+      padding: 12px 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    `;
+
+    // Play alarm sound
+    alarmAudio = new Audio('assets/music/alarm.wav');
+    alarmAudio.loop = true;
+    alarmAudio.play().catch(error => {
+      console.log('Could not play alarm sound:', error);
+    });
+
+    document.body.appendChild(popup);
+
+    // Handle OK button click
+    button.addEventListener('click', () => {
+      if (alarmAudio) {
+        alarmAudio.pause();
+        alarmAudio.currentTime = 0;
+        alarmAudio = null;
+      }
+      popup.remove();
+    });
+
+    // Handle button hover effect
+    button.addEventListener('mouseenter', () => {
+      button.style.transform = 'translateY(-1px)';
+      button.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+    });
+
+    button.addEventListener('mouseleave', () => {
+      button.style.transform = 'translateY(0)';
+      button.style.boxShadow = 'none';
+    });
+  };
 
   /**
    * Updates the timer display with current time
@@ -67,7 +183,7 @@ const TimerModule = (function() {
 
         if (timeLeft === 0) {
           resetTimer();
-          alert("Time's up!");
+          showTimerPopup();
           timeLeft = timerStates.pomodoro;
           updateTimer();
         }
@@ -108,6 +224,99 @@ const TimerModule = (function() {
       
       Object.entries(timerModes).forEach(([mode, button]) => {
         button.addEventListener("click", () => setTimerMode(mode, button));
+      });
+      
+      // Timer settings dropdown functionality
+      const timerSettingBtn = document.getElementById('timer-setting');
+      const timerDropdown = document.querySelector('.timer-settings-dropdown');
+      const timerInputs = document.querySelectorAll('.timer-input');
+
+      // Toggle dropdown visibility
+      timerSettingBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        timerDropdown.classList.toggle('show');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function() {
+        timerDropdown.classList.remove('show');
+      });
+
+      // Prevent dropdown from closing when clicking inside it
+      timerDropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+
+      // Handle timer input changes
+      timerInputs.forEach(input => {
+        // Store the initial value as the previous value
+        let previousValue = input.value;
+        
+        // Update previous value when input gains focus
+        input.addEventListener('focus', function(e) {
+          previousValue = this.value;
+          e.stopPropagation();
+        });
+
+        input.addEventListener('change', function() {
+          const timerType = this.dataset.timer;
+          const minutes = parseInt(this.value);
+          
+          // Validate input
+          if (minutes < 1 || isNaN(minutes)) {
+            this.value = previousValue;
+            return;
+          }
+          
+          // Update previous value with valid input
+          previousValue = this.value;
+          
+          // Update timer states
+          switch(timerType) {
+            case 'pomodoro':
+              timerStates.pomodoro = minutes * 60;
+              if (elements.pomodoro.classList.contains('active')) {
+                timeLeft = timerStates.pomodoro;
+                updateTimer();
+                resetTimer();
+              }
+              break;
+            case 'short-break':
+              timerStates.short = minutes * 60;
+              if (elements.short.classList.contains('active')) {
+                timeLeft = timerStates.short;
+                updateTimer();
+                resetTimer();
+              }
+              break;
+            case 'long-break':
+              timerStates.long = minutes * 60;
+              if (elements.long.classList.contains('active')) {
+                timeLeft = timerStates.long;
+                updateTimer();
+                resetTimer();
+              }
+              break;
+          }
+        });
+
+        // Prevent input from closing dropdown when focused
+        input.addEventListener('focus', function(e) {
+          e.stopPropagation();
+        });
+
+        // Handle Enter key to apply changes, revert empty input, and close dropdown
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            // If input is empty, revert to previous value
+            if (this.value === '' || this.value === null) {
+              this.value = previousValue;
+            }
+            this.blur();
+            timerDropdown.classList.remove('show');
+          }
+          e.stopPropagation();
+        });
       });
     }
   };

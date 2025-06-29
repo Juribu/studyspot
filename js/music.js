@@ -21,18 +21,123 @@ const MusicModule = (function() {
   /** SoundCloud player widget */
   let widget = null;
   let isPlaying = false;
-  let currentGenre = 'lofi'; // Default genre
-  let currentMood = 'focus'; // Default mood
+  let hasShownNotification = false;
 
-  /** Playlist URLs for different genres */
+  /** Playlist URLs for different genres and moods */
   const playlistUrls = {
-    lofi: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
-    jazz: 'https://soundcloud.com/relaxcafemusic/sets/10-hours-jazz-relaxing-music',
-    ambient: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
-    piano: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
-    acoustic: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
-    electric: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
-    nature: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus'
+    // Genres
+    lofi: {
+      url: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
+      artist: 'Lofi Girl'
+    },
+    jazz: {
+      url: 'https://soundcloud.com/relaxcafemusic/sets/10-hours-jazz-relaxing-music',
+      artist: 'RelaxCafeMusic'
+    },
+    // Moods
+    focus: {
+      url: 'https://soundcloud.com/relaxdaily/sets/deep-focus-music-studying-concentration-work',
+      artist: 'RelaxDaily'
+    }
+  };
+
+  /**
+   * Shows a notification popup about SoundCloud music source
+   * @param {string} selectionType - The type of selection ('genre' or 'mood')
+   * @param {string} selectionValue - The selected value
+   */
+  const showMusicNotification = (selectionType = null, selectionValue = null) => {
+    // Get current active selection to show in notification
+    let currentInfo = 'Lofi Girl';
+    let selectionName = 'Lofi';
+    
+    if (selectionType && selectionValue && playlistUrls[selectionValue]) {
+      currentInfo = playlistUrls[selectionValue].artist;
+      selectionName = selectionValue.charAt(0).toUpperCase() + selectionValue.slice(1);
+    } else {
+      const activeGenre = document.querySelector('.genre-option.active');
+      const activeMood = document.querySelector('.mood-option.active');
+      
+      if (activeGenre) {
+        const genreValue = activeGenre.dataset.genre;
+        currentInfo = playlistUrls[genreValue]?.artist || 'Lofi Girl';
+        selectionName = genreValue.charAt(0).toUpperCase() + genreValue.slice(1);
+      } else if (activeMood) {
+        const moodValue = activeMood.dataset.mood;
+        currentInfo = playlistUrls[moodValue]?.artist || 'Lofi Girl';
+        selectionName = moodValue.charAt(0).toUpperCase() + moodValue.slice(1);
+      }
+    }
+    
+    // Remove existing notification if any
+    const existingNotification = document.getElementById('music-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.id = 'music-notification';
+    notification.innerHTML = `
+      <div class="notification-content">
+        <p>Playing: ${selectionName}</p>
+        <p class="playlist-info">Author: ${currentInfo} - SoundCloud</p>
+      </div>
+    `;
+    
+    // Add styles
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+      font-family: 'Inter', sans-serif;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+      max-width: 250px;
+    `;
+    
+    const content = notification.querySelector('.notification-content');
+    content.style.cssText = `
+      margin: 0;
+    `;
+    
+    const mainText = notification.querySelector('p:first-child');
+    mainText.style.cssText = `
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+    
+    const playlistInfo = notification.querySelector('.playlist-info');
+    playlistInfo.style.cssText = `
+      margin: 0;
+      font-size: 12px;
+      opacity: 0.8;
+      font-weight: 400;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+      notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
   };
 
   /**
@@ -54,26 +159,21 @@ const MusicModule = (function() {
    * Creates SoundCloud player widget
    * @param {string} playlistUrl - The URL of the playlist to load
    */
-  const createSoundCloudPlayer = (playlistUrl = playlistUrls.lofi) => {
-    // Remove existing iframe if it exists
+  const createSoundCloudPlayer = (playlistUrl = playlistUrls.lofi.url) => {
     const existingIframe = document.getElementById('soundcloud-player');
     if (existingIframe) {
       existingIframe.remove();
     }
 
-    // Create hidden iframe for SoundCloud player
     const iframe = document.createElement('iframe');
     iframe.id = 'soundcloud-player';
     iframe.width = '100%';
     iframe.height = '166';
-    iframe.scrolling = 'no';
-    iframe.frameBorder = 'no';
     iframe.allow = 'autoplay';
-    iframe.style.display = 'none'; // Hide the player
+    iframe.style.display = 'none';
     
     iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(playlistUrl)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false`;
     
-    // Add to page
     document.body.appendChild(iframe);
     
     return iframe;
@@ -83,21 +183,16 @@ const MusicModule = (function() {
    * Initializes SoundCloud Widget API
    */
   const initializeSoundCloudWidget = () => {
-    // Load SoundCloud Widget API
     const script = document.createElement('script');
     script.src = 'https://w.soundcloud.com/player/api.js';
     script.onload = () => {
-      // Create player iframe
       const iframe = createSoundCloudPlayer();
       
-      // Initialize widget
       widget = SC.Widget(iframe);
       
-      // Set up event listeners
       widget.bind(SC.Widget.Events.READY, () => {
         console.log('SoundCloud player ready');
         
-        // Listen for play/pause events
         widget.bind(SC.Widget.Events.PLAY, () => {
           isPlaying = true;
           updatePlayButton(true);
@@ -142,13 +237,15 @@ const MusicModule = (function() {
         widget.pause();
       } else {
         widget.play();
+        // Show notification on first play only
+        if (!hasShownNotification) {
+          showMusicNotification();
+          hasShownNotification = true;
+        }
       }
     }, 100);
   };
 
-  /**
-   * Goes to previous track
-   */
   const previousTrack = () => {
     if (!widget) return;
     setTimeout(() => {
@@ -156,9 +253,6 @@ const MusicModule = (function() {
     }, 100);
   };
 
-  /**
-   * Goes to next track
-   */
   const nextTrack = () => {
     if (!widget) return;
     setTimeout(() => {
@@ -166,51 +260,42 @@ const MusicModule = (function() {
     }, 100);
   };
 
-  /**
-   * Toggles genre dropdown visibility
-   */
-  const toggleGenreDropdown = () => {
-    if (elements.genreDropdown) {
-      elements.genreDropdown.classList.toggle('show');
+  const toggleDropdown = (type) => {
+    const dropdown = type === 'genre' ? elements.genreDropdown : elements.moodDropdown;
+    if (dropdown) {
+      dropdown.classList.toggle('show');
     }
   };
 
   /**
-   * Toggles mood dropdown visibility
+   * Loads a new playlist for the selected option
+   * @param {string} key - The key to load from playlistUrls
    */
-  const toggleMoodDropdown = () => {
-    if (elements.moodDropdown) {
-      elements.moodDropdown.classList.toggle('show');
+  const loadPlaylist = (key) => {
+    const playlist = playlistUrls[key];
+    if (!playlist) {
+      console.error(`No playlist found for: ${key}`);
+      return;
     }
-  };
 
-  /**
-   * Loads a new playlist for the selected genre
-   * @param {string} genre - The genre to load
-   */
-  const loadPlaylistForGenre = (genre) => {
-    const playlistUrl = playlistUrls[genre] || playlistUrls.lofi;
+    const playlistUrl = playlist.url;
     
     // Reset playing state when switching
     isPlaying = false;
     updatePlayButton(false);
     
-    // Create new player with the selected playlist
     const iframe = createSoundCloudPlayer(playlistUrl);
     
-    // Reinitialize widget with new iframe
     if (window.SC && window.SC.Widget) {
       widget = SC.Widget(iframe);
       
-      // Set up event listeners for the new widget
       widget.bind(SC.Widget.Events.READY, () => {
-        console.log(`SoundCloud player ready with ${genre} playlist`);
+        console.log(`SoundCloud player ready with ${key} playlist`);
         
         // Reset playing state once widget is ready
         isPlaying = false;
         updatePlayButton(false);
         
-        // Listen for play/pause events
         widget.bind(SC.Widget.Events.PLAY, () => {
           isPlaying = true;
           updatePlayButton(true);
@@ -230,8 +315,8 @@ const MusicModule = (function() {
         widget.bind(SC.Widget.Events.PLAY_PROGRESS, () => {
           widget.getCurrentSound((sound) => {
             if (sound && elements.trackTitle) {
-              // Only update title if we're not showing the genre format
-              if (!elements.trackTitle.textContent.includes(' by ')) {
+              // Only update title if we're not showing the custom format
+              if (!elements.trackTitle.innerHTML.includes('<br>')) {
                 elements.trackTitle.textContent = sound.title;
               }
             }
@@ -239,89 +324,59 @@ const MusicModule = (function() {
         });
       });
       
-      // Handle widget load errors
       widget.bind(SC.Widget.Events.ERROR, () => {
-        console.error(`Error loading ${genre} playlist`);
+        console.error(`Error loading ${key} playlist`);
       });
     }
   };
   /**
-   * Handles genre selection
-   * @param {string} genre - Selected genre
+   * Handles selection of genre or mood
+   * @param {string} type - 'genre' or 'mood'
+   * @param {string} value - The selected value
    */
-  const selectGenre = (genre) => {
-    currentGenre = genre;
+  const handleSelection = (type, value) => {
+    const isGenre = type === 'genre';
+    const currentOptions = isGenre ? elements.genreOptions : elements.moodOptions;
+    const otherOptions = isGenre ? elements.moodOptions : elements.genreOptions;
+    const dropdown = isGenre ? elements.genreDropdown : elements.moodDropdown;
+    const selector = isGenre ? `.genre-option[data-genre="${value}"]` : `.mood-option[data-mood="${value}"]`;
     
-    // Remove active class from all genre options first
-    elements.genreOptions.forEach(option => {
+    // Remove active class from current type options
+    currentOptions.forEach(option => {
       option.classList.remove('active');
     });
     
-    // Remove active class from all mood options (mutual exclusivity)
-    elements.moodOptions.forEach(option => {
+    // Remove active class from other type options (mutual exclusivity)
+    otherOptions.forEach(option => {
       option.classList.remove('active');
     });
     
-    // Add active class only to the selected genre option
-    const selectedOption = document.querySelector(`.genre-option[data-genre="${genre}"]`);
+    // Add active class to selected option
+    const selectedOption = document.querySelector(selector);
     if (selectedOption) {
       selectedOption.classList.add('active');
     }
     
-    // Hide dropdown
-    if (elements.genreDropdown) {
-      elements.genreDropdown.classList.remove('show');
+    // Close dropdown
+    if (dropdown) {
+      dropdown.classList.remove('show');
     }
     
-    // Load the appropriate playlist for the selected genre
-    loadPlaylistForGenre(genre);
-    
-    // Update track title to show selected genre
-    if (elements.trackTitle) {
-      if (genre === 'jazz') {
-        elements.trackTitle.innerHTML = `Jazz<br><span class="author-name">RelaxCafeMusic</span>`;
-      } else {
-        elements.trackTitle.innerHTML = `${genre.charAt(0).toUpperCase() + genre.slice(1)}<br><span class="author-name">Lofi Girl</span>`;
+    // Load playlist if available
+    const playlist = playlistUrls[value];
+    if (playlist) {
+      loadPlaylist(value);
+      
+      // Update track title
+      if (elements.trackTitle) {
+        elements.trackTitle.innerHTML = `${value.charAt(0).toUpperCase() + value.slice(1)}<br><span class="author-name">${playlist.artist}</span>`;
       }
+      
+      // Show notification when switching genres/moods
+      showMusicNotification(type, value);
     }
     
-    console.log(`Genre changed to: ${genre}`);
-  };
-
-  /**
-   * Handles mood selection
-   * @param {string} mood - Selected mood
-   */
-  const selectMood = (mood) => {
-    currentMood = mood;
-    
-    // Remove active class from all mood options first
-    elements.moodOptions.forEach(option => {
-      option.classList.remove('active');
-    });
-    
-    // Remove active class from all genre options (mutual exclusivity)
-    elements.genreOptions.forEach(option => {
-      option.classList.remove('active');
-    });
-    
-    // Add active class only to the selected mood option
-    const selectedOption = document.querySelector(`.mood-option[data-mood="${mood}"]`);
-    if (selectedOption) {
-      selectedOption.classList.add('active');
-    }
-    
-    // Hide dropdown
-    if (elements.moodDropdown) {
-      elements.moodDropdown.classList.remove('show');
-    }
-    
-    // Update track title to show selected mood
-    if (elements.trackTitle) {
-      elements.trackTitle.textContent = `Lofi Girl - ${mood.charAt(0).toUpperCase() + mood.slice(1)} vibes - music to focus/study to`;
-    }
-    
-    console.log(`Mood changed to: ${mood}`);
+    console.log(`${type} changed to: ${value}`);
   };
 
   /**
@@ -346,10 +401,8 @@ const MusicModule = (function() {
      * Initializes the music module
      */
     init() {
-      // Initialize SoundCloud Widget
       initializeSoundCloudWidget();
 
-      // Add event listeners to buttons
       if (elements.playBtn) {
         elements.playBtn.addEventListener('click', togglePlayPause);
       }
@@ -362,33 +415,28 @@ const MusicModule = (function() {
         elements.nextBtn.addEventListener('click', nextTrack);
       }
 
-      // Genre button event
       if (elements.genreBtn) {
-        elements.genreBtn.addEventListener('click', toggleGenreDropdown);
+        elements.genreBtn.addEventListener('click', () => toggleDropdown('genre'));
       }
 
-      // Genre option events
       elements.genreOptions.forEach(option => {
         option.addEventListener('click', () => {
           const genre = option.dataset.genre;
-          selectGenre(genre);
+          handleSelection('genre', genre);
         });
       });
 
-      // Mood button event
       if (elements.moodBtn) {
-        elements.moodBtn.addEventListener('click', toggleMoodDropdown);
+        elements.moodBtn.addEventListener('click', () => toggleDropdown('mood'));
       }
 
-      // Mood option events
       elements.moodOptions.forEach(option => {
         option.addEventListener('click', () => {
           const mood = option.dataset.mood;
-          selectMood(mood);
+          handleSelection('mood', mood);
         });
       });
 
-      // Close dropdown if clicked outside
       document.addEventListener('click', handleClickOutside);
 
       console.log('Music module initialized');

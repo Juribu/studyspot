@@ -28,15 +28,15 @@
 <body>
     <!-- Main container that holds everything -->
     <div class="main-wrapper">
+        <!-- App name/logo - positioned independently -->
+        <div id="title">StudySpot</div>
+        
         <div class="container">
-            <!-- Left side: App title and current time -->
+            <!-- Left side: Current time and quote -->
             <div class="left-section">
-                <!-- App name/logo -->
-                <div id="title">StudySpot</div>
-
                 <!-- Current time and motivational quote -->
                 <div class="center-display">
-                    <h1 id="clock">12:00</h1> <!-- Real time will be shown here -->
+                    <h1 id="clock">12:00</h1>
                     <h3 id="quote">"Strive for progress, not perfection"</h3>
                 </div>
             </div>
@@ -47,28 +47,53 @@
                 <div class="pomodoro-timer">
                     <!-- Left side of timer: display and controls -->
                     <div class="timer-left">
-                        <h2 id="time">25:00</h2> <!-- Timer countdown display -->
+                        <h2 id="time">25:00</h2>
                         <div class="timer-controls">
-                            <button id="start">Start</button> <!-- Start/Stop button -->
-                            <button id="timer-setting">
-                                <img src="assets/icons/timer_settings.svg" alt="timer setting">
-                            </button>
+                            <button id="start">Start</button>
+                            <!-- Timer Settings-->
+                            <div class="timer-setting">
+                                <button id="timer-setting"><img src="assets/icons/timer_settings.svg" alt="timer setting"></button>
+                                <!-- Timer settings dropdown menu -->
+                                <div class="dropdown dropdown--large timer-settings-dropdown">
+                                    <div class="timer-option" data-timer="pomodoro">
+                                        <span class="timer-name">Pomodoro</span>
+                                        <div class="timer-input-container">
+                                            <input type="number" class="timer-input" value="25" min="1" max="120" data-timer="pomodoro">
+                                            <span class="timer-unit">min</span>
+                                        </div>
+                                    </div>
+                                    <div class="timer-option" data-timer="short-break">
+                                        <span class="timer-name">Short Break</span>
+                                        <div class="timer-input-container">
+                                            <input type="number" class="timer-input" value="5" min="1" max="60" data-timer="short-break">
+                                            <span class="timer-unit">min</span>
+                                        </div>
+                                    </div>
+                                    <div class="timer-option" data-timer="long-break">
+                                        <span class="timer-name">Long Break</span>
+                                        <div class="timer-input-container">
+                                            <input type="number" class="timer-input" value="15" min="1" max="120" data-timer="long-break">
+                                            <span class="timer-unit">min</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Divider line between timer sections -->
                     <hr id="vertical-line">
-
+                    
                     <!-- Right side of timer: mode selection buttons -->
                     <div class="timer-right">
-                        <button id="pomodoro" class="active">Pomodoro</button> <!-- 25 min work -->
-                        <button id="short-break">Short Break</button> <!-- 5 min break -->
-                        <button id="long-break">Long Break</button> <!-- 15 min break -->
+                        <button id="pomodoro" class="active">Pomodoro</button>
+                        <button id="short-break">Short Break</button>
+                        <button id="long-break">Long Break</button>
                     </div>
 
                 </div>
                 
-                <!-- Music Player Section -->
+               <!-- Music Player Section -->
                 <div class="music-section">
                     <!-- Main music player with song info and controls -->
                     <div class="music-player">
@@ -77,9 +102,8 @@
 
                         <!-- Song title and playback controls -->
                         <div class="track-details">
-                            <h4>Lofi Girl <br> Lofi music</h4> <!-- Song title -->
+                            <h4>Lofi Girl <br> Lofi music</h4>
                             <div class="track-controls">
-                                <!-- Music control buttons -->
                                 <button id="prev"><img src="assets/icons/prev.svg" alt="Previous" /></button>
                                 <button id="play"><img src="assets/icons/play.svg" alt="Play" /></button>
                                 <button id="next"><img src="assets/icons/next.svg" alt="Next" /></button>
@@ -90,29 +114,29 @@
                     <!-- Music preference buttons -->
                     <div class="music-taste">
                         <div class="mood-container">
-                            <button id="mood"><img src="assets/icons/mood.svg" alt="select mood"></button> <!-- Choose mood -->
+                            <button id="mood"><img src="assets/icons/mood.svg" alt="select mood"></button>
                             <!-- Mood dropdown menu -->
-                            <div class="mood-dropdown">
+                            <div class="dropdown dropdown--medium mood-dropdown">
                                 <button class="mood-option" data-mood="focus">Focus</button>
-                                <button class="mood-option" data-mood="cozy">Cozy</button>
-                                <button class="mood-option" data-mood="motivated">Motivated</button>
-                                <button class="mood-option" data-mood="reflective">Reflective</button>
-                                <button class="mood-option" data-mood="upbeat">Upbeat</button>
-                                <button class="mood-option" data-mood="sleepy">Sleepy</button>
-                                <button class="mood-option" data-mood="grounded">Grounded</button>
+                                <!-- <button class="mood-option" data-mood="cozy">Cozy</button> -->
+                                <!-- <button class="mood-option" data-mood="motivated">Motivated</button> -->
+                                <!-- <button class="mood-option" data-mood="reflective">Reflective</button> -->
+                                <!-- <button class="mood-option" data-mood="upbeat">Upbeat</button> -->
+                                <!-- <button class="mood-option" data-mood="sleepy">Sleepy</button> -->
+                                <!-- <button class="mood-option" data-mood="grounded">Grounded</button> -->
                             </div>
                         </div>
                         <div class="genre-container">
-                            <button id="genre"><img src="assets/icons/sound.svg" alt="select sound"></button> <!-- Choose genre -->
+                            <button id="genre"><img src="assets/icons/sound.svg" alt="select sound"></button>
                             <!-- Genre dropdown menu -->
-                            <div class="genre-dropdown">
+                            <div class="dropdown dropdown--medium genre-dropdown">
                                 <button class="genre-option active" data-genre="lofi">Lofi</button>
                                 <button class="genre-option" data-genre="jazz">Jazz</button>
-                                <button class="genre-option" data-genre="ambient">Ambient</button>
-                                <button class="genre-option" data-genre="piano">Piano</button>
-                                <button class="genre-option" data-genre="acoustic">Acoustic</button>
-                                <button class="genre-option" data-genre="electric">Electric</button>
-                                <button class="genre-option" data-genre="nature">Nature</button>
+                                <!-- <button class="genre-option" data-genre="ambient">Ambient</button> -->
+                                <!-- <button class="genre-option" data-genre="piano">Piano</button> -->
+                                <!-- <button class="genre-option" data-genre="acoustic">Acoustic</button> -->
+                                <!-- <button class="genre-option" data-genre="electric">Electric</button> -->
+                                <!-- <button class="genre-option" data-genre="nature">Nature</button> -->
                             </div>
                         </div>
                     </div>
@@ -134,15 +158,15 @@
                     <div class="todo-items">
                         <!-- Sample task 1 (can be deleted) -->
                         <div class="todo-item">
-                            <input type="checkbox" id="task1" class="task-checkbox"> <!-- Check when done -->
-                            <label for="task1" class="task-label">Task</label> <!-- Task name -->
+                            <input type="checkbox" id="task1" class="task-checkbox">
+                            <label for="task1" class="task-label">Task</label>
                             <!-- Three dots menu for each task -->
                             <div class="task-options-container">
-                                <button class="task-options">⋮</button> <!-- Three dots button -->
+                                <button class="task-options">⋮</button>
                                 <!-- Dropdown menu that appears when you click three dots -->
-                                <div class="task-dropdown">
-                                    <button class="edit-btn">Edit</button> <!-- Edit task name -->
-                                    <button class="delete-btn">Delete</button> <!-- Delete task -->
+                                <div class="dropdown dropdown--small task-dropdown">
+                                    <button class="edit-btn">Edit</button>
+                                    <button class="delete-btn">Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -153,7 +177,7 @@
                             <label for="task2" class="task-label">Completed Task</label>
                             <div class="task-options-container">
                                 <button class="task-options">⋮</button>
-                                <div class="task-dropdown">
+                                <div class="dropdown dropdown--small task-dropdown">
                                     <button class="edit-btn">Edit</button>
                                     <button class="delete-btn">Delete</button>
                                 </div>
