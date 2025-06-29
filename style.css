@@ -169,6 +169,8 @@ body {
   position: absolute;
   top: 40px;
   left: 80px;
+  font-weight: 400;
+  font-size: 32px;
 }
 
 .center-display{
