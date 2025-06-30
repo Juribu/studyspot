@@ -167,10 +167,11 @@ body {
 
 #title{
   position: absolute;
-  top: 40px;
+  top: 80px;
   left: 80px;
   font-weight: 400;
   font-size: 32px;
+  font-family: 'Nothing You Could Do', cursive;
 }
 
 .center-display{
