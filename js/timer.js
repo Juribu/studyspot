@@ -23,6 +23,7 @@ const TimerModule = (function() {
   let timeLeft = timerStates.pomodoro;
   let isRunning = false;
   let interval;
+  let lastTickTime; // Add timestamp tracking
   let alarmAudio = null;
 
   /**
@@ -155,6 +156,7 @@ const TimerModule = (function() {
   const resetTimer = () => {
     clearInterval(interval);
     isRunning = false;
+    lastTickTime = null;
     elements.start.textContent = "Start";
   };
 
@@ -177,17 +179,27 @@ const TimerModule = (function() {
     if (isRunning) {
       resetTimer();
     } else {
+      lastTickTime = Date.now();
       interval = setInterval(() => {
-        timeLeft--;
-        updateTimer();
-
-        if (timeLeft === 0) {
-          resetTimer();
-          showTimerPopup();
-          timeLeft = timerStates.pomodoro;
+        const now = Date.now();
+        const deltaTime = Math.floor((now - lastTickTime) / 1000);
+        
+        // Remove the document.hidden check that was stopping the timer
+        if (deltaTime >= 1) {
+          // Prevent large time jumps by capping at 60 seconds
+          const actualDecrement = Math.min(deltaTime, 60);
+          timeLeft = Math.max(0, timeLeft - actualDecrement);
           updateTimer();
+          lastTickTime = now;
+
+          if (timeLeft === 0) {
+            resetTimer();
+            showTimerPopup();
+            timeLeft = timerStates.pomodoro;
+            updateTimer();
+          }
         }
-      }, 1000);
+      }, 100);
 
       elements.start.textContent = "Pause";
       isRunning = true;
