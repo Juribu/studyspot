@@ -17,22 +17,22 @@ const BackgroundModule = (function () {
     {
       id: 'rain',
       name: 'Rainy Window',
-      url: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=2400&q=80'
+      url: 'assets/images/rain.jpg'
     },
     {
       id: 'cafe',
       name: 'Cozy Cafe',
-      url: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=2400&q=80'
+      url: 'assets/images/coffee.jpg'
     },
     {
       id: 'forest',
       name: 'Misty Forest',
-      url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2400&q=80'
+      url: 'assets/images/forrest.jpg'
     },
     {
       id: 'library',
       name: 'Library',
-      url: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=80'
+      url: 'assets/images/library.jpg'
     }
   ];
 
