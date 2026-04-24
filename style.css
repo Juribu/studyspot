@@ -489,14 +489,73 @@ button:hover {
 
 .music-player {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   border-radius: 16px;
   padding: clamp(12px, 1.5vw, 20px);
   background-color: rgba(53, 53, 53, 0.4);
   flex: 1;
-  gap: clamp(12px, 1.5vw, 16px);
+  gap: clamp(10px, 1.2vw, 14px);
   min-width: 0;
   box-sizing: border-box;
+}
+
+.music-source-toggle {
+  display: inline-flex;
+  align-self: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.source-option {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(11px, 0.85vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.source-option:hover:not(.active) {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.source-option.active {
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+}
+
+.player-soundcloud {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.5vw, 16px);
+  flex: 1;
+  min-width: 0;
+}
+
+.player-spotify {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-spotify[hidden] {
+  display: none;
+}
+
+.player-spotify iframe {
+  width: 100%;
+  height: 80px;
+  border: 0;
+  border-radius: 12px;
+  display: block;
 }
 
 .music-taste{
@@ -1573,6 +1632,12 @@ button:hover {
   }
 
   .music-player {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .player-soundcloud {
     flex-direction: column;
     text-align: center;
     gap: 16px;

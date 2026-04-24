@@ -14,7 +14,7 @@ I have a monitor and I like to do work on my big monitor and use my laptop scree
 - **Rotating quotes** — a new motivational quote every hour to keep you going
 - **Pomodoro timer** — Pomodoro, Short Break, and Long Break modes with customizable durations
 - **Todo list** — add, edit, check off, and delete tasks; persists across sessions
-- **Music player** — built-in lofi and jazz tracks with play/pause/prev/next controls and mood/genre pickers
+- **Music player** — built-in lofi and jazz tracks with play/pause/prev/next controls and mood/genre pickers. A **Spotify** option is also available alongside SoundCloud — toggle it inside the player block. Full-track playback requires a Spotify Premium account; free accounts can still browse and play 30-second previews. StudySpot never sees, stores, or transmits your Spotify credentials — login is handled entirely inside Spotify's own embed, and whether your Spotify session sticks across reloads depends on your browser's third-party cookie policy (most modern browsers will ask you to log in again each session).
 - **Background picker** — choose from curated backgrounds (coffee shop, forest, library, rain, street) to match your vibe
 - **Study stats** — track your total focus time and sessions completed
 - **Fullscreen mode** — one click to hide everything else on your laptop

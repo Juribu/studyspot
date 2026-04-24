@@ -97,17 +97,29 @@
                 <div class="music-section">
                     <!-- Main music player with song info and controls -->
                     <div class="music-player">
-                        <!-- Album/song artwork -->
-                        <img src="assets/images/lofi.png" alt="Lofi Girl" class="track-thumbnail" />
+                        <!-- Source switcher (SoundCloud / Spotify) -->
+                        <div class="music-source-toggle" role="tablist" aria-label="Music source">
+                            <button class="source-option active" data-source="soundcloud" role="tab" aria-selected="true">SoundCloud</button>
+                            <button class="source-option" data-source="spotify" role="tab" aria-selected="false">Spotify</button>
+                        </div>
 
-                        <!-- Song title and playback controls -->
-                        <div class="track-details">
-                            <h4>Lofi Girl <br> Lofi music</h4>
-                            <div class="track-controls">
-                                <button id="prev"><img src="assets/icons/prev.svg" alt="Previous" /></button>
-                                <button id="play"><img src="assets/icons/play.svg" alt="Play" /></button>
-                                <button id="next"><img src="assets/icons/next.svg" alt="Next" /></button>
+                        <!-- SoundCloud player UI -->
+                        <div class="player-soundcloud">
+                            <img src="assets/images/lofi.png" alt="Lofi Girl" class="track-thumbnail" />
+
+                            <div class="track-details">
+                                <h4>Lofi Girl <br> Lofi music</h4>
+                                <div class="track-controls">
+                                    <button id="prev"><img src="assets/icons/prev.svg" alt="Previous" /></button>
+                                    <button id="play"><img src="assets/icons/play.svg" alt="Play" /></button>
+                                    <button id="next"><img src="assets/icons/next.svg" alt="Next" /></button>
+                                </div>
                             </div>
+                        </div>
+
+                        <!-- Spotify embed (loaded on demand) -->
+                        <div class="player-spotify" hidden>
+                            <iframe id="spotify-embed" title="Spotify player" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
                         </div>
                     </div>
                     

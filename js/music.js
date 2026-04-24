@@ -15,31 +15,46 @@ const MusicModule = (function() {
     genreOptions: document.querySelectorAll('.genre-option'),
     moodBtn: document.getElementById('mood'),
     moodDropdown: document.querySelector('.mood-dropdown'),
-    moodOptions: document.querySelectorAll('.mood-option')
+    moodOptions: document.querySelectorAll('.mood-option'),
+    sourceOptions: document.querySelectorAll('.source-option'),
+    soundcloudPanel: document.querySelector('.player-soundcloud'),
+    spotifyPanel: document.querySelector('.player-spotify'),
+    spotifyEmbed: document.getElementById('spotify-embed')
   };
+
+  const SOURCE_KEY = 'studyspot_music_source';
+  const SELECTION_KEY = 'studyspot_music_selection';
 
   /** SoundCloud player widget */
   let widget = null;
   let isPlaying = false;
   let hasShownNotification = false;
+  let currentSource = 'soundcloud';
+  let currentSelection = { type: 'genre', value: 'lofi' };
 
   /** Playlist URLs for different genres and moods */
   const playlistUrls = {
     // Genres
     lofi: {
       url: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
-      artist: 'Lofi Girl'
+      artist: 'Lofi Girl',
+      spotifyId: '37i9dQZF1DWWQRwui0ExPn' // Lofi Beats
     },
     jazz: {
       url: 'https://soundcloud.com/relaxcafemusic/sets/10-hours-jazz-relaxing-music',
-      artist: 'RelaxCafeMusic'
+      artist: 'RelaxCafeMusic',
+      spotifyId: '37i9dQZF1DXbITWG1ZJKYt' // Jazz in the Background
     },
     // Moods
     focus: {
       url: 'https://soundcloud.com/relaxdaily/sets/deep-focus-music-studying-concentration-work',
-      artist: 'RelaxDaily'
+      artist: 'RelaxDaily',
+      spotifyId: '37i9dQZF1DWZeKCadgRdKQ' // Deep Focus
     }
   };
+
+  const buildSpotifyEmbedUrl = (id) =>
+    `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
 
   /**
    * Shows a notification popup about SoundCloud music source
@@ -75,12 +90,13 @@ const MusicModule = (function() {
       existingNotification.remove();
     }
     
+    const sourceLabel = currentSource === 'spotify' ? 'Spotify' : 'SoundCloud';
     const notification = document.createElement('div');
     notification.id = 'music-notification';
     notification.innerHTML = `
       <div class="notification-content">
         <p>Playing: ${selectionName}</p>
-        <p class="playlist-info">Author: ${currentInfo} - SoundCloud</p>
+        <p class="playlist-info">${sourceLabel}${currentSource === 'soundcloud' ? ` · ${currentInfo}` : ''}</p>
       </div>
     `;
     
@@ -365,18 +381,84 @@ const MusicModule = (function() {
     // Load playlist if available
     const playlist = playlistUrls[value];
     if (playlist) {
-      loadPlaylist(value);
-      
-      // Update track title
-      if (elements.trackTitle) {
-        elements.trackTitle.innerHTML = `${value.charAt(0).toUpperCase() + value.slice(1)}<br><span class="author-name">${playlist.artist}</span>`;
+      currentSelection = { type, value };
+      saveSelection();
+
+      if (currentSource === 'spotify') {
+        loadSpotifyPlaylist(value);
+      } else {
+        loadPlaylist(value);
+        // Update track title (SoundCloud panel only)
+        if (elements.trackTitle) {
+          elements.trackTitle.innerHTML = `${value.charAt(0).toUpperCase() + value.slice(1)}<br><span class="author-name">${playlist.artist}</span>`;
+        }
       }
-      
+
       // Show notification when switching genres/moods
       showMusicNotification(type, value);
     }
-    
-    console.log(`${type} changed to: ${value}`);
+  };
+
+  /**
+   * Loads a playlist into the Spotify embed iframe
+   * @param {string} key - Playlist key from playlistUrls
+   */
+  const loadSpotifyPlaylist = (key) => {
+    const playlist = playlistUrls[key];
+    if (!playlist || !playlist.spotifyId || !elements.spotifyEmbed) return;
+    elements.spotifyEmbed.src = buildSpotifyEmbedUrl(playlist.spotifyId);
+  };
+
+  const saveSource = () => {
+    try { localStorage.setItem(SOURCE_KEY, currentSource); } catch {}
+  };
+
+  const saveSelection = () => {
+    try { localStorage.setItem(SELECTION_KEY, JSON.stringify(currentSelection)); } catch {}
+  };
+
+  const loadSavedState = () => {
+    try {
+      const savedSource = localStorage.getItem(SOURCE_KEY);
+      if (savedSource === 'soundcloud' || savedSource === 'spotify') {
+        currentSource = savedSource;
+      }
+      const savedSel = JSON.parse(localStorage.getItem(SELECTION_KEY));
+      if (savedSel && playlistUrls[savedSel.value]) {
+        currentSelection = savedSel;
+      }
+    } catch {}
+  };
+
+  /**
+   * Switches between SoundCloud and Spotify backends
+   * @param {string} source - 'soundcloud' or 'spotify'
+   */
+  const setSource = (source) => {
+    if (source === currentSource) return;
+    currentSource = source;
+    saveSource();
+
+    // Toggle button active state
+    elements.sourceOptions.forEach(btn => {
+      const isActive = btn.dataset.source === source;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    if (source === 'spotify') {
+      // Pause SoundCloud and reveal Spotify
+      if (widget && isPlaying) widget.pause();
+      elements.soundcloudPanel.hidden = true;
+      elements.spotifyPanel.hidden = false;
+      // Load current selection into Spotify embed
+      loadSpotifyPlaylist(currentSelection.value);
+    } else {
+      // Stop Spotify (clearing src halts playback) and reveal SoundCloud
+      if (elements.spotifyEmbed) elements.spotifyEmbed.src = '';
+      elements.spotifyPanel.hidden = true;
+      elements.soundcloudPanel.hidden = false;
+    }
   };
 
   /**
@@ -401,7 +483,25 @@ const MusicModule = (function() {
      * Initializes the music module
      */
     init() {
+      loadSavedState();
       initializeSoundCloudWidget();
+
+      // Source toggle (SoundCloud / Spotify)
+      elements.sourceOptions.forEach(btn => {
+        btn.addEventListener('click', () => setSource(btn.dataset.source));
+      });
+
+      // If user previously chose Spotify, switch into it after init
+      if (currentSource === 'spotify') {
+        elements.sourceOptions.forEach(btn => {
+          const isActive = btn.dataset.source === 'spotify';
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        elements.soundcloudPanel.hidden = true;
+        elements.spotifyPanel.hidden = false;
+        loadSpotifyPlaylist(currentSelection.value);
+      }
 
       if (elements.playBtn) {
         elements.playBtn.addEventListener('click', togglePlayPause);
