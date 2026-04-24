@@ -23,8 +23,10 @@ const TimerModule = (function() {
   let timeLeft = timerStates.pomodoro;
   let isRunning = false;
   let interval;
-  let lastTickTime; // Add timestamp tracking
+  let lastTickTime;
   let alarmAudio = null;
+  let currentMode = 'pomodoro';
+  let sessionStartTime = null;
 
   /**
    * Creates and shows the timer popup when time is up
@@ -151,12 +153,52 @@ const TimerModule = (function() {
   };
 
   /**
+   * Syncs timer based on real elapsed time (handles background tabs)
+   */
+  const syncTimer = () => {
+    const now = Date.now();
+    const deltaTime = Math.floor((now - lastTickTime) / 1000);
+
+    if (deltaTime >= 1) {
+      timeLeft = Math.max(0, timeLeft - deltaTime);
+      updateTimer();
+      lastTickTime = now;
+
+      if (timeLeft === 0) {
+        const duration = timerStates[currentMode];
+        completeSession(duration);
+        resetTimer();
+        showTimerPopup();
+        timeLeft = timerStates[currentMode];
+        updateTimer();
+      }
+    }
+  };
+
+  /**
+   * Records a completed session to StudyStatsModule
+   */
+  const completeSession = (durationSeconds) => {
+    if (typeof StudyStatsModule !== 'undefined' && sessionStartTime) {
+      StudyStatsModule.recordSession({
+        startTime: sessionStartTime,
+        endTime: new Date().toISOString(),
+        durationSeconds: durationSeconds,
+        type: currentMode,
+        completed: true
+      });
+    }
+    sessionStartTime = null;
+  };
+
+  /**
    * Resets timer to stopped state
    */
   const resetTimer = () => {
     clearInterval(interval);
     isRunning = false;
     lastTickTime = null;
+    sessionStartTime = null;
     elements.start.textContent = "Start";
   };
 
@@ -180,25 +222,11 @@ const TimerModule = (function() {
       resetTimer();
     } else {
       lastTickTime = Date.now();
+      if (!sessionStartTime) {
+        sessionStartTime = new Date().toISOString();
+      }
       interval = setInterval(() => {
-        const now = Date.now();
-        const deltaTime = Math.floor((now - lastTickTime) / 1000);
-        
-        // Remove the document.hidden check that was stopping the timer
-        if (deltaTime >= 1) {
-          // Prevent large time jumps by capping at 60 seconds
-          const actualDecrement = Math.min(deltaTime, 60);
-          timeLeft = Math.max(0, timeLeft - actualDecrement);
-          updateTimer();
-          lastTickTime = now;
-
-          if (timeLeft === 0) {
-            resetTimer();
-            showTimerPopup();
-            timeLeft = timerStates.pomodoro;
-            updateTimer();
-          }
-        }
+        syncTimer();
       }, 100);
 
       elements.start.textContent = "Pause";
@@ -212,6 +240,7 @@ const TimerModule = (function() {
    * @param {HTMLElement} button - Button element to set as active
    */
   const setTimerMode = (mode, button) => {
+    currentMode = mode;
     timeLeft = timerStates[mode];
     updateTimer();
     setActiveButton(button);
@@ -238,6 +267,13 @@ const TimerModule = (function() {
         button.addEventListener("click", () => setTimerMode(mode, button));
       });
       
+      // Immediately sync timer when returning from background tab
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && isRunning) {
+          syncTimer();
+        }
+      });
+
       // Timer settings dropdown functionality
       const timerSettingBtn = document.getElementById('timer-setting');
       const timerDropdown = document.querySelector('.timer-settings-dropdown');

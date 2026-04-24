@@ -6,6 +6,7 @@
 const StudySpotApp = (function() {
   /** Array of modules to initialize */
   const modules = [
+    { name: 'StudyStatsModule', module: () => typeof StudyStatsModule !== 'undefined' && StudyStatsModule },
     { name: 'TimerModule', module: () => typeof TimerModule !== 'undefined' && TimerModule },
     { name: 'TaskModule', module: () => typeof TaskModule !== 'undefined' && TaskModule },
     { name: 'ClockModule', module: () => typeof ClockModule !== 'undefined' && ClockModule },

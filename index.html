@@ -189,8 +189,10 @@
 
         </div>
 
-        <!-- Bottom section with fullscreen button -->
+        <!-- Bottom section with stats and fullscreen buttons -->
         <div class="bottom-section">
+            <button id="stats-btn" class="stats-button"><img src="assets/icons/stats.svg"
+                    alt="study stats"></button>
             <button class="full-screen"><img src="assets/icons/fullscreen.svg"
                     alt="change to full full-screen"></button>
         </div>
@@ -198,6 +200,7 @@
         
         <!-- JavaScript files - Load in the right order! -->
         <!-- Load modules first, then initialize the app -->
+        <script src="js/stats.js"></script>     <!-- Study stats tracking -->
         <script src="js/timer.js"></script>     <!-- Pomodoro timer functionality -->
         <script src="js/tasks.js"></script>     <!-- Todo list functionality -->
         <script src="js/clock.js"></script>     <!-- Real-time clock display -->

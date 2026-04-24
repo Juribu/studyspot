@@ -139,6 +139,7 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: 16px;
   height: 5%;
   margin-right: 54px;
   margin-bottom: 24px;
@@ -730,6 +731,616 @@ button:hover {
 .task-dropdown .delete-btn:hover {
   background-color: rgba(255, 0, 0, 0.2);
   color: #ff6b6b;
+}
+
+/* ==========================================================================
+   STATS BUTTON & MODAL
+   ========================================================================== */
+.stats-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-button img {
+  width: 28px;
+  height: 28px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.stats-button:hover img {
+  opacity: 1;
+}
+
+/* ── Modal container & animation ── */
+#stats-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+}
+
+.stats-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+#stats-modal.visible .stats-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.stats-content {
+  background-color: rgba(40, 40, 40, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 28px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  position: relative;
+}
+
+#stats-modal.visible .stats-content {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.stats-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stats-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.stats-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+/* ── Header ── */
+.stats-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+.stats-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.stats-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  margin-left: auto;
+}
+
+.stats-close:hover {
+  color: white;
+  transform: none;
+}
+
+/* ── Streak badge ── */
+.stats-streak {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 160, 50, 0.12);
+  border: 1px solid rgba(255, 160, 50, 0.25);
+  border-radius: 20px;
+  padding: 4px 12px 4px 6px;
+}
+
+.streak-flame {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.streak-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffb347;
+}
+
+.streak-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 179, 71, 0.7);
+}
+
+/* ── Top row: goal ring + summary cards ── */
+.stats-top-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+/* ── Daily goal ring ── */
+.stats-goal-ring {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+}
+
+.goal-svg {
+  width: 110px;
+  height: 110px;
+}
+
+.goal-progress-circle {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.goal-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.goal-percent {
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.goal-label {
+  display: block;
+  font-size: 10px;
+  opacity: 0.5;
+  white-space: nowrap;
+}
+
+.goal-edit-btn {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.goal-edit-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: none;
+}
+
+/* ── Goal editor overlay ── */
+.goal-editor-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.goal-editor {
+  background: rgba(50, 50, 50, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+}
+
+.goal-editor h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.goal-editor-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.goal-editor-input {
+  width: 80px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.goal-editor-input::-webkit-outer-spin-button,
+.goal-editor-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.goal-editor-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.goal-editor-unit {
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+.goal-editor-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.goal-editor-actions button {
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.goal-editor-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.goal-editor-cancel:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: white;
+  transform: none;
+}
+
+.goal-editor-save {
+  background: white;
+  border: none;
+  color: black;
+}
+
+.goal-editor-save:hover {
+  transform: none;
+  opacity: 0.9;
+}
+
+/* ── Summary cards ── */
+.stats-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-card {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats-card-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.stats-card-label {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.45;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Weekly bar chart ── */
+.stats-chart-section {
+  margin-bottom: 24px;
+}
+
+.stats-section-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 12px 0;
+  opacity: 0.6;
+}
+
+.stats-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100px;
+  padding: 0 4px;
+}
+
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.chart-bar-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 36px;
+  border-radius: 4px 4px 2px 2px;
+  background: rgba(255, 255, 255, 0.2);
+  position: relative;
+  transition: height 0.4s ease;
+  min-height: 2px;
+}
+
+.chart-col--today .chart-bar {
+  background: linear-gradient(to top, rgba(180, 140, 255, 0.5), rgba(255, 255, 255, 0.4));
+}
+
+.chart-bar--empty {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.chart-bar-tooltip {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.chart-bar:hover .chart-bar-tooltip {
+  opacity: 1;
+}
+
+.chart-day-label {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.4;
+}
+
+.chart-col--today .chart-day-label {
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* ── History section with tabs ── */
+.stats-history {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 20px;
+}
+
+.stats-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.stats-tab {
+  flex: 1;
+  padding: 7px 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.stats-tab:hover {
+  color: rgba(255, 255, 255, 0.7);
+  transform: none;
+}
+
+.stats-tab.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.stats-history-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.stats-history-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.stats-history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.stats-history-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* ── Empty state ── */
+.stats-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 0;
+  gap: 8px;
+}
+
+.stats-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+}
+
+.stats-empty-text {
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0.4;
+  margin: 0;
+}
+
+.stats-empty-subtext {
+  font-size: 13px;
+  opacity: 0.25;
+  margin: 0;
+}
+
+/* ── Session rows ── */
+.stats-date-group {
+  margin-bottom: 12px;
+}
+
+.stats-date-label {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.35;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-session-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 3px;
+  gap: 8px;
+}
+
+.stats-session-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stats-session-type {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.stats-session-time {
+  font-size: 12px;
+  opacity: 0.35;
+  flex-shrink: 0;
+}
+
+.stats-session-duration {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.7;
+  text-align: right;
+  min-width: 44px;
+  flex-shrink: 0;
+}
+
+/* ── Export / Import buttons ── */
+.stats-data-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stats-export-btn,
+.stats-import-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.stats-export-btn:hover,
+.stats-import-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: none;
 }
 
 /* ==========================================================================

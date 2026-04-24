@@ -113,7 +113,7 @@ const TaskModule = (function() {
       <label for="${taskId}" class="task-label">${taskText}</label>
       <div class="task-options-container">
         <button class="task-options">⋮</button>
-        <div class="task-dropdown">
+        <div class="dropdown dropdown--small task-dropdown">
           <button class="edit-btn">Edit</button>
           <button class="delete-btn">Delete</button>
         </div>
