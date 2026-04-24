@@ -78,7 +78,7 @@ const StudyStatsModule = (function() {
   // ── Stats calculations ──
 
   const getStats = () => {
-    const sessions = getSessions();
+    const sessions = getSessions().filter(s => s.type === 'pomodoro');
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(todayStart);
@@ -109,7 +109,7 @@ const StudyStatsModule = (function() {
    * Calculates study streak (consecutive days with at least one session)
    */
   const getStreak = () => {
-    const sessions = getSessions();
+    const sessions = getSessions().filter(s => s.type === 'pomodoro');
     if (sessions.length === 0) return 0;
 
     // Get unique study dates (as date strings in local time)
@@ -149,7 +149,7 @@ const StudyStatsModule = (function() {
    * Gets study minutes for each day of the current week (Mon-Sun)
    */
   const getWeeklyChartData = () => {
-    const sessions = getSessions();
+    const sessions = getSessions().filter(s => s.type === 'pomodoro');
     const now = new Date();
     const todayDow = now.getDay(); // 0=Sun
     // Monday of this week

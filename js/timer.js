@@ -50,7 +50,7 @@ const TimerModule = (function() {
   let timeLeft = timerStates.pomodoro;
   let isRunning = false;
   let interval;
-  let lastTickTime;
+  let endTime = null;
   let alarmAudio = null;
   let currentMode = 'pomodoro';
   let sessionStartTime = null;
@@ -183,22 +183,23 @@ const TimerModule = (function() {
    * Syncs timer based on real elapsed time (handles background tabs)
    */
   const syncTimer = () => {
-    const now = Date.now();
-    const deltaTime = Math.floor((now - lastTickTime) / 1000);
+    if (endTime === null) return;
 
-    if (deltaTime >= 1) {
-      timeLeft = Math.max(0, timeLeft - deltaTime);
+    const remainingMs = endTime - Date.now();
+    const newTimeLeft = Math.max(0, Math.ceil(remainingMs / 1000));
+
+    if (newTimeLeft === timeLeft) return;
+
+    timeLeft = newTimeLeft;
+    updateTimer();
+
+    if (timeLeft === 0) {
+      const duration = timerStates[currentMode];
+      completeSession(duration);
+      resetTimer();
+      showTimerPopup();
+      timeLeft = timerStates[currentMode];
       updateTimer();
-      lastTickTime = now;
-
-      if (timeLeft === 0) {
-        const duration = timerStates[currentMode];
-        completeSession(duration);
-        resetTimer();
-        showTimerPopup();
-        timeLeft = timerStates[currentMode];
-        updateTimer();
-      }
     }
   };
 
@@ -224,7 +225,7 @@ const TimerModule = (function() {
   const resetTimer = () => {
     clearInterval(interval);
     isRunning = false;
-    lastTickTime = null;
+    endTime = null;
     sessionStartTime = null;
     elements.start.textContent = "Start";
   };
@@ -248,13 +249,13 @@ const TimerModule = (function() {
     if (isRunning) {
       resetTimer();
     } else {
-      lastTickTime = Date.now();
+      endTime = Date.now() + timeLeft * 1000;
       if (!sessionStartTime) {
         sessionStartTime = new Date().toISOString();
       }
       interval = setInterval(() => {
         syncTimer();
-      }, 100);
+      }, 250);
 
       elements.start.textContent = "Pause";
       isRunning = true;
