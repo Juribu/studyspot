@@ -21,7 +21,9 @@ I have a monitor and I like to do work on my big monitor and use my laptop scree
 
 ## Getting Started
 
-No build step, no dependencies, no setup — it's just HTML, CSS, and vanilla JavaScript.
+**Live site:** [https://juribu.github.io/studyspot/](https://juribu.github.io/studyspot/) — just open it in your browser, no install needed.
+
+Or run it locally — no build step, no dependencies, no setup, it's just HTML, CSS, and vanilla JavaScript.
 
 ```bash
 git clone <this-repo>
@@ -31,7 +33,7 @@ open index.html
 
 Or just double-click `index.html`. That's it.
 
-Tip: open it on your laptop, hit the fullscreen button, and keep your main monitor for actual work.
+Tip: open it on your laptop, hit the fullscreen button (or `fn + f` on Mac), and keep your main monitor for actual work.
 
 ## Project Structure
 
