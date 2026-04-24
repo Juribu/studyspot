@@ -4,9 +4,32 @@
  * @module TaskModule
  */
 const TaskModule = (function() {
+  const STORAGE_KEY = 'studyspot_tasks';
   const todoItems = document.querySelector('.todo-items');
   const addTaskBtn = document.getElementById('add-task');
   let taskCounter = 2;
+
+  /**
+   * Serializes current tasks from the DOM to a plain array
+   * @returns {Array<{text: string, completed: boolean}>}
+   */
+  const serializeTasks = () => {
+    return Array.from(todoItems.querySelectorAll('.todo-item')).map(item => ({
+      text: item.querySelector('.task-label').textContent,
+      completed: item.querySelector('.task-checkbox').checked
+    }));
+  };
+
+  /**
+   * Persists current task list to localStorage
+   */
+  const saveTasks = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeTasks()));
+    } catch (e) {
+      console.warn('Could not save tasks', e);
+    }
+  };
 
   /** CSS styles for inline task editing */
   const EDIT_INPUT_STYLE = `
@@ -53,7 +76,10 @@ const TaskModule = (function() {
   /**
    * Handles checkbox change with animation delay
    */
-  const handleCheckboxChange = () => setTimeout(moveCompletedTasksToBottom, 150);
+  const handleCheckboxChange = () => {
+    saveTasks();
+    setTimeout(moveCompletedTasksToBottom, 150);
+  };
 
   /**
    * Closes all open dropdown menus
@@ -151,7 +177,10 @@ const TaskModule = (function() {
     
     const saveEdit = () => {
       const newText = input.value.trim();
-      if (newText) taskLabel.textContent = newText;
+      if (newText) {
+        taskLabel.textContent = newText;
+        saveTasks();
+      }
       taskLabel.style.display = 'block';
       input.remove();
     };
@@ -192,7 +221,10 @@ const TaskModule = (function() {
       elements.dropdown.classList.remove('show');
       editTask(elements.taskLabel);
     });
-    elements.deleteBtn.addEventListener('click', () => task.remove());
+    elements.deleteBtn.addEventListener('click', () => {
+      task.remove();
+      saveTasks();
+    });
   };
 
   /**
@@ -218,6 +250,7 @@ const TaskModule = (function() {
         const newTask = createTaskElement(`task${++taskCounter}`, taskName);
         addTaskEventListeners(newTask);
         addTaskToList(newTask);
+        saveTasks();
       }
       input.remove();
     };
@@ -236,12 +269,38 @@ const TaskModule = (function() {
     document.querySelectorAll('.todo-item').forEach(addTaskEventListeners);
   };
 
+  /**
+   * Replaces hardcoded sample tasks with persisted tasks, if any exist.
+   * Returns true if saved tasks were loaded (so init can skip sample wiring).
+   */
+  const loadSavedTasks = () => {
+    let saved;
+    try {
+      saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    } catch (e) {
+      return false;
+    }
+    if (saved === null || !Array.isArray(saved)) return false;
+
+    todoItems.innerHTML = '';
+    saved.forEach(({ text, completed }) => {
+      const task = createTaskElement(`task${++taskCounter}`, text);
+      if (completed) task.querySelector('.task-checkbox').checked = true;
+      addTaskEventListeners(task);
+      todoItems.appendChild(task);
+    });
+    moveCompletedTasksToBottom();
+    return true;
+  };
+
   return {
     /**
      * Initializes the task module
      */
     init() {
-      initializeExistingTasks();
+      if (!loadSavedTasks()) {
+        initializeExistingTasks();
+      }
       addTaskBtn.addEventListener('click', addNewTask);
       document.addEventListener('click', closeAllDropdowns);
     }

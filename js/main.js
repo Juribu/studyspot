@@ -10,7 +10,9 @@ const StudySpotApp = (function() {
     { name: 'TimerModule', module: () => typeof TimerModule !== 'undefined' && TimerModule },
     { name: 'TaskModule', module: () => typeof TaskModule !== 'undefined' && TaskModule },
     { name: 'ClockModule', module: () => typeof ClockModule !== 'undefined' && ClockModule },
-    { name: 'MusicModule', module: () => typeof MusicModule !== 'undefined' && MusicModule }
+    { name: 'MusicModule', module: () => typeof MusicModule !== 'undefined' && MusicModule },
+    { name: 'BackgroundModule', module: () => typeof BackgroundModule !== 'undefined' && BackgroundModule },
+    { name: 'QuoteModule', module: () => typeof QuoteModule !== 'undefined' && QuoteModule }
   ];
 
   /**

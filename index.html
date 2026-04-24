@@ -189,8 +189,14 @@
 
         </div>
 
-        <!-- Bottom section with stats and fullscreen buttons -->
+        <!-- Bottom section with stats, background picker and fullscreen buttons -->
         <div class="bottom-section">
+            <div class="background-container">
+                <button id="background-btn" title="Change background"><img src="assets/icons/background.svg"
+                        alt="change background"></button>
+                <!-- Background picker dropdown (populated by background.js) -->
+                <div class="dropdown dropdown--up background-dropdown"></div>
+            </div>
             <button id="stats-btn" class="stats-button"><img src="assets/icons/stats.svg"
                     alt="study stats"></button>
             <button class="full-screen"><img src="assets/icons/fullscreen.svg"
@@ -205,6 +211,8 @@
         <script src="js/tasks.js"></script>     <!-- Todo list functionality -->
         <script src="js/clock.js"></script>     <!-- Real-time clock display -->
         <script src="js/music.js"></script>     <!-- Music player functionality -->
+        <script src="js/background.js"></script><!-- Background picker -->
+        <script src="js/quotes.js"></script>    <!-- Hourly quote rotation -->
         <script src="js/main.js"></script>      <!-- Starts everything up -->
     </div>
 </body>

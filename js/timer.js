@@ -13,11 +13,38 @@ const TimerModule = (function() {
     long: document.getElementById("long-break")
   };
 
+  const DURATIONS_KEY = 'studyspot_timer_durations';
+
   /** Timer durations in seconds */
   const timerStates = {
     pomodoro: 1500,    // 25 minutes
     short: 300,        // 5 minutes
     long: 600          // 10 minutes
+  };
+
+  /**
+   * Loads saved timer durations from localStorage into timerStates
+   */
+  const loadDurations = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DURATIONS_KEY));
+      if (saved && typeof saved === 'object') {
+        ['pomodoro', 'short', 'long'].forEach(key => {
+          if (typeof saved[key] === 'number' && saved[key] > 0) {
+            timerStates[key] = saved[key];
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Could not load saved timer durations', e);
+    }
+  };
+
+  /**
+   * Persists the current timer durations to localStorage
+   */
+  const saveDurations = () => {
+    localStorage.setItem(DURATIONS_KEY, JSON.stringify(timerStates));
   };
 
   let timeLeft = timerStates.pomodoro;
@@ -251,8 +278,22 @@ const TimerModule = (function() {
      * Initializes the timer module
      */
     init() {
+      loadDurations();
+      timeLeft = timerStates.pomodoro;
+
+      // Sync settings inputs with loaded durations
+      const inputMap = {
+        'pomodoro': timerStates.pomodoro,
+        'short-break': timerStates.short,
+        'long-break': timerStates.long
+      };
+      Object.entries(inputMap).forEach(([key, seconds]) => {
+        const input = document.querySelector(`.timer-input[data-timer="${key}"]`);
+        if (input) input.value = Math.round(seconds / 60);
+      });
+
       updateTimer();
-      
+
       // Start button
       elements.start.addEventListener("click", startTimer);
       
@@ -346,6 +387,8 @@ const TimerModule = (function() {
               }
               break;
           }
+
+          saveDurations();
         });
 
         // Prevent input from closing dropdown when focused
