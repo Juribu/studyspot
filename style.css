@@ -497,39 +497,79 @@ button:hover {
   gap: clamp(10px, 1.2vw, 14px);
   min-width: 0;
   box-sizing: border-box;
+  transition: background-color 0.2s ease, border-radius 0.2s ease;
+}
+
+/* When Spotify is active, the embed ships with its own container — drop the
+   outer glass to avoid a "box in a box". Padding stays so dimensions hold. */
+.music-player.music-player--spotify {
+  background-color: transparent;
+  border-radius: 0;
 }
 
 .music-source-toggle {
   display: inline-flex;
   align-self: center;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-right: auto;
+  margin-left: 54px;
+  background: rgba(0, 0, 0, 0.28);
   border-radius: 999px;
   padding: 3px;
-  gap: 2px;
+  gap: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .source-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.55);
   font-family: 'Inter', sans-serif;
-  font-size: clamp(11px, 0.85vw, 13px);
+  font-size: clamp(11px, 0.85vw, 12px);
   font-weight: 500;
   letter-spacing: 0.01em;
-  padding: 5px 14px;
+  padding: 5px 12px;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.18s ease, background-color 0.18s ease;
+  white-space: nowrap;
+  transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+.source-option svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: opacity 0.18s ease, color 0.18s ease;
 }
 
 .source-option:hover:not(.active) {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.source-option:hover:not(.active) svg {
+  opacity: 1;
 }
 
 .source-option.active {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   color: #111;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+}
+
+.source-option.active svg {
+  opacity: 1;
+}
+
+.source-option.active[data-source="soundcloud"] svg {
+  color: #ff5500;
+}
+
+.source-option.active[data-source="spotify"] svg {
+  color: #1db954;
 }
 
 .player-soundcloud {
@@ -541,31 +581,97 @@ button:hover {
 }
 
 .player-spotify {
-  display: flex;
+  display: block;
   flex: 1;
   min-width: 0;
+  height: 152px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #181818;
 }
 
+.player-soundcloud[hidden],
 .player-spotify[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .player-spotify iframe {
   width: 100%;
-  height: 80px;
+  height: 152px;
   border: 0;
-  border-radius: 12px;
   display: block;
+  color-scheme: normal;
 }
 
 .music-taste{
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
   width: clamp(60px, 6vw, 75px);
   flex-shrink: 0;
   box-sizing: border-box;
+}
+
+.taste-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.taste-group[hidden] {
+  display: none !important;
+}
+
+.spotify-picker-btn {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(29, 185, 84, 0.08);
+  border: 1px solid rgba(29, 185, 84, 0.25) !important;
+}
+
+.spotify-picker-btn:hover {
+  background: rgba(29, 185, 84, 0.18) !important;
+  color: #1db954;
+}
+
+.spotify-picker-btn svg {
+  width: 56%;
+  height: 56%;
+}
+
+.spotify-mood-option,
+.spotify-genre-option {
+  width: 100%;
+  max-height: 40px;
+  padding: clamp(6px, 0.8vw, 10px) clamp(12px, 1.5vw, 20px);
+  background-color: transparent;
+  border: 1px solid white;
+  border-radius: 36px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: clamp(14px, 1.2vw, 16px);
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.spotify-mood-option.active,
+.spotify-genre-option.active {
+  background-color: white;
+  color: black;
+}
+
+.spotify-mood-option:hover:not(.active),
+.spotify-genre-option:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 .track-thumbnail{
   width: clamp(80px, 8vw, 120px);

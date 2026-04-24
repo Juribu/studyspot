@@ -97,12 +97,6 @@
                 <div class="music-section">
                     <!-- Main music player with song info and controls -->
                     <div class="music-player">
-                        <!-- Source switcher (SoundCloud / Spotify) -->
-                        <div class="music-source-toggle" role="tablist" aria-label="Music source">
-                            <button class="source-option active" data-source="soundcloud" role="tab" aria-selected="true">SoundCloud</button>
-                            <button class="source-option" data-source="spotify" role="tab" aria-selected="false">Spotify</button>
-                        </div>
-
                         <!-- SoundCloud player UI -->
                         <div class="player-soundcloud">
                             <img src="assets/images/lofi.png" alt="Lofi Girl" class="track-thumbnail" />
@@ -119,36 +113,59 @@
 
                         <!-- Spotify embed (loaded on demand) -->
                         <div class="player-spotify" hidden>
-                            <iframe id="spotify-embed" title="Spotify player" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                            <iframe id="spotify-embed" title="Spotify player" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share" allowtransparency="true"></iframe>
                         </div>
                     </div>
                     
                     <!-- Music preference buttons -->
                     <div class="music-taste">
-                        <div class="mood-container">
-                            <button id="mood"><img src="assets/icons/mood.svg" alt="select mood"></button>
-                            <!-- Mood dropdown menu -->
-                            <div class="dropdown dropdown--medium mood-dropdown">
-                                <button class="mood-option" data-mood="focus">Focus</button>
-                                <!-- <button class="mood-option" data-mood="cozy">Cozy</button> -->
-                                <!-- <button class="mood-option" data-mood="motivated">Motivated</button> -->
-                                <!-- <button class="mood-option" data-mood="reflective">Reflective</button> -->
-                                <!-- <button class="mood-option" data-mood="upbeat">Upbeat</button> -->
-                                <!-- <button class="mood-option" data-mood="sleepy">Sleepy</button> -->
-                                <!-- <button class="mood-option" data-mood="grounded">Grounded</button> -->
+                        <!-- SoundCloud picker -->
+                        <div class="taste-group taste-soundcloud">
+                            <div class="mood-container">
+                                <button id="mood" title="Pick a mood"><img src="assets/icons/mood.svg" alt="select mood"></button>
+                                <div class="dropdown dropdown--medium mood-dropdown">
+                                    <button class="mood-option" data-mood="focus">Focus</button>
+                                </div>
+                            </div>
+                            <div class="genre-container">
+                                <button id="genre" title="Pick a genre"><img src="assets/icons/sound.svg" alt="select sound"></button>
+                                <div class="dropdown dropdown--medium genre-dropdown">
+                                    <button class="genre-option active" data-genre="lofi">Lofi</button>
+                                    <button class="genre-option" data-genre="jazz">Jazz</button>
+                                </div>
                             </div>
                         </div>
-                        <div class="genre-container">
-                            <button id="genre"><img src="assets/icons/sound.svg" alt="select sound"></button>
-                            <!-- Genre dropdown menu -->
-                            <div class="dropdown dropdown--medium genre-dropdown">
-                                <button class="genre-option active" data-genre="lofi">Lofi</button>
-                                <button class="genre-option" data-genre="jazz">Jazz</button>
-                                <!-- <button class="genre-option" data-genre="ambient">Ambient</button> -->
-                                <!-- <button class="genre-option" data-genre="piano">Piano</button> -->
-                                <!-- <button class="genre-option" data-genre="acoustic">Acoustic</button> -->
-                                <!-- <button class="genre-option" data-genre="electric">Electric</button> -->
-                                <!-- <button class="genre-option" data-genre="nature">Nature</button> -->
+
+                        <!-- Spotify picker (separate icons + dropdowns; never mixes with SoundCloud) -->
+                        <div class="taste-group taste-spotify" hidden>
+                            <div class="mood-container">
+                                <button id="spotify-mood" class="spotify-picker-btn" title="Pick a mood">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 3 L13.5 10.5 L21 12 L13.5 13.5 L12 21 L10.5 13.5 L3 12 L10.5 10.5 Z"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown dropdown--medium spotify-mood-dropdown">
+                                    <button class="spotify-mood-option active" data-mood="focus">Focus</button>
+                                    <button class="spotify-mood-option" data-mood="coding">Coding</button>
+                                    <button class="spotify-mood-option" data-mood="brain">Brain Food</button>
+                                    <button class="spotify-mood-option" data-mood="instrumental">Instrumental</button>
+                                </div>
+                            </div>
+                            <div class="genre-container">
+                                <button id="spotify-genre" class="spotify-picker-btn" title="Pick a genre">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M9 18V5l12-2v13"/>
+                                        <circle cx="6" cy="18" r="3"/>
+                                        <circle cx="18" cy="16" r="3"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown dropdown--medium spotify-genre-dropdown">
+                                    <button class="spotify-genre-option active" data-genre="lofi">Lofi</button>
+                                    <button class="spotify-genre-option" data-genre="jazz">Jazz</button>
+                                    <button class="spotify-genre-option" data-genre="piano">Piano</button>
+                                    <button class="spotify-genre-option" data-genre="classical">Classical</button>
+                                    <button class="spotify-genre-option" data-genre="ambient">Ambient</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -203,6 +220,21 @@
 
         <!-- Bottom section with stats, background picker and fullscreen buttons -->
         <div class="bottom-section">
+            <!-- Source switcher (SoundCloud / Spotify) -->
+            <div class="music-source-toggle" role="tablist" aria-label="Music source">
+                <button class="source-option active" data-source="soundcloud" role="tab" aria-selected="true" title="Play from SoundCloud">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M7 17V8.5a4.5 4.5 0 0 1 8.94-.78A3.5 3.5 0 0 1 20.5 11.5a3.5 3.5 0 0 1-3.5 3.5h-1v2H7zM5 17H3v-5h2v5zm-3 0H1v-3h1v3z"/>
+                    </svg>
+                    <span>SoundCloud</span>
+                </button>
+                <button class="source-option" data-source="spotify" role="tab" aria-selected="false" title="Play from Spotify">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12C24 5.4 18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.84-.179-.96-.6-.122-.421.179-.84.601-.96 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.141zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                    </svg>
+                    <span>Spotify</span>
+                </button>
+            </div>
             <div class="background-container">
                 <button id="background-btn" title="Change background"><img src="assets/icons/background.svg"
                         alt="change background"></button>
