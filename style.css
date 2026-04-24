@@ -106,7 +106,8 @@ img {
   transition: all 0.15s ease;
 }
 
-.background-option img {
+.background-option img,
+.background-option video {
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
@@ -204,6 +205,27 @@ body {
   justify-content: center;
   overflow-x: hidden;
   transition: background-image 0.4s ease;
+}
+
+/* Fullscreen video background — shown only when a video option is active */
+.bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  display: none;
+  pointer-events: none;
+}
+
+.bg-video.active {
+  display: block;
+}
+
+/* Hide the static image background while a video is playing behind */
+body.has-video-bg {
+  background: #000;
 }
 
 /* Soft radial darken behind the timer/quote for legibility */
@@ -501,10 +523,12 @@ button:hover {
 }
 
 /* When Spotify is active, the embed ships with its own container — drop the
-   outer glass to avoid a "box in a box". Padding stays so dimensions hold. */
+   outer glass to avoid a "box in a box" and let the embed span the full
+   width the glass would have occupied. */
 .music-player.music-player--spotify {
   background-color: transparent;
   border-radius: 0;
+  padding: 0;
 }
 
 .music-source-toggle {
@@ -1618,6 +1642,89 @@ button:hover {
   color: rgba(255, 255, 255, 0.85);
   border-color: rgba(255, 255, 255, 0.2);
   transform: none;
+}
+
+/* ==========================================================================
+   EDITABLE LAYOUT (MOVE & RESIZE UTILITY BLOCKS)
+   ========================================================================== */
+#edit-layout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+#edit-layout-btn svg {
+  width: 26px;
+  height: 26px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+#edit-layout-btn:hover svg {
+  opacity: 1;
+}
+
+#edit-layout-btn.active svg {
+  opacity: 1;
+  color: #9ecbff;
+}
+
+/* Blocks that have been frozen into free-floating mode.
+   Once set, they stay fixed for the rest of the session — a page
+   reload restores the default flex layout. */
+.pomodoro-timer.floating,
+.music-section.floating,
+.todo-list.floating {
+  position: fixed;
+  margin: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  z-index: 50;
+}
+
+/* Edit-mode visual + interaction lock: the block itself handles pointer
+   events for dragging, children are inert so clicks don't toggle UI. */
+body.edit-mode .pomodoro-timer.floating,
+body.edit-mode .music-section.floating,
+body.edit-mode .todo-list.floating {
+  outline: 2px dashed rgba(255, 255, 255, 0.6);
+  outline-offset: 4px;
+  cursor: move;
+  user-select: none;
+}
+
+body.edit-mode .pomodoro-timer.floating *,
+body.edit-mode .music-section.floating *,
+body.edit-mode .todo-list.floating * {
+  pointer-events: none;
+  user-select: none;
+}
+
+body.edit-mode .resize-handle {
+  pointer-events: auto !important;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 16px;
+  height: 16px;
+  border-right: 3px solid rgba(255, 255, 255, 0.75);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.75);
+  border-radius: 2px;
+  cursor: nwse-resize;
+  display: none;
+  z-index: 5;
+}
+
+body.edit-mode .resize-handle {
+  display: block;
 }
 
 /* ==========================================================================

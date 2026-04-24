@@ -26,6 +26,9 @@
 </head>
 
 <body>
+    <!-- Video background layer (used when a video background is selected) -->
+    <video id="bg-video" class="bg-video" autoplay muted loop playsinline></video>
+
     <!-- Main container that holds everything -->
     <div class="main-wrapper">
         <!-- App name/logo - positioned independently -->
@@ -243,6 +246,16 @@
             </div>
             <button id="stats-btn" class="stats-button"><img src="assets/icons/stats.svg"
                     alt="study stats"></button>
+            <button id="edit-layout-btn" title="Customize layout" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="5 9 2 12 5 15"/>
+                    <polyline points="9 5 12 2 15 5"/>
+                    <polyline points="15 19 12 22 9 19"/>
+                    <polyline points="19 9 22 12 19 15"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <line x1="12" y1="2" x2="12" y2="22"/>
+                </svg>
+            </button>
             <button class="full-screen"><img src="assets/icons/fullscreen.svg"
                     alt="change to full full-screen"></button>
         </div>
@@ -257,6 +270,7 @@
         <script src="js/music.js"></script>     <!-- Music player functionality -->
         <script src="js/background.js"></script><!-- Background picker -->
         <script src="js/quotes.js"></script>    <!-- Hourly quote rotation -->
+        <script src="js/layout.js"></script>    <!-- Drag/resize utility blocks -->
         <script src="js/main.js"></script>      <!-- Starts everything up -->
     </div>
 </body>
