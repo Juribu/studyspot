@@ -170,6 +170,20 @@
                                     <button class="spotify-genre-option" data-genre="ambient">Ambient</button>
                                 </div>
                             </div>
+                            <div class="link-container">
+                                <button id="spotify-link" class="spotify-picker-btn" title="Paste your own Spotify playlist link">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.41 1.41"/>
+                                        <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.41-1.41"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown spotify-link-dropdown">
+                                    <p class="spotify-link-hint">Paste a Spotify playlist link to play it here. Open any playlist in Spotify, hit <strong>Share &rarr; Copy link</strong>, then paste below.</p>
+                                    <input type="text" id="spotify-link-input" class="spotify-link-input" placeholder="https://open.spotify.com/playlist/..." spellcheck="false" autocomplete="off" />
+                                    <button id="spotify-link-load" class="spotify-link-load">Load playlist</button>
+                                    <p class="spotify-link-error" aria-live="polite"></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

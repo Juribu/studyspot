@@ -608,6 +608,7 @@ button:hover {
   display: block;
   flex: 1;
   min-width: 0;
+  width: 100%;
   height: 152px;
   overflow: hidden;
   border-radius: 12px;
@@ -625,6 +626,18 @@ button:hover {
   border: 0;
   display: block;
   color-scheme: normal;
+}
+
+/* When Spotify is the active source, shrink the picker column so it
+   doesn't push the music-section taller than the embed's natural
+   compact height (152px) — otherwise the iframe's own bottom padding
+   shows as a blank dark band, or empty space appears beside it. */
+.music-section:has(.player-spotify:not([hidden])) .music-taste {
+  gap: 4px;
+}
+.music-section:has(.player-spotify:not([hidden])) .music-taste button {
+  width: clamp(42px, 3.6vw, 46px);
+  height: clamp(42px, 3.6vw, 46px);
 }
 
 .music-taste{
@@ -696,6 +709,101 @@ button:hover {
 .spotify-mood-option:hover:not(.active),
 .spotify-genre-option:hover:not(.active) {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Spotify playlist link picker */
+.link-container {
+  position: relative;
+}
+
+/* When the link dropdown is open, lift the whole music section above
+   sibling blocks (tasks, etc.) so the input/overlay isn't covered.
+   Use `position: relative` only when not floating; the .floating rule
+   already sets position: fixed and creates its own stacking context. */
+.music-section:not(.floating):has(.spotify-link-dropdown.show) {
+  position: relative;
+  z-index: 9999;
+}
+.music-section.floating:has(.spotify-link-dropdown.show) {
+  z-index: 9999;
+}
+
+.spotify-link-dropdown {
+  width: 280px;
+  padding: 14px;
+  gap: 10px;
+  align-items: stretch;
+  right: 0;
+  z-index: 10000;
+}
+
+.spotify-link-hint {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.spotify-link-hint strong {
+  color: #1db954;
+  font-weight: 600;
+}
+
+.spotify-link-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.spotify-link-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.spotify-link-input:focus {
+  border-color: rgba(29, 185, 84, 0.6);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.music-taste button.spotify-link-load {
+  width: 100%;
+  height: auto;
+  padding: 9px 14px;
+  background-color: #1db954;
+  color: black;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.18s ease, transform 0.12s ease;
+}
+
+.music-taste button.spotify-link-load:hover {
+  background-color: #1ed760;
+  transform: none;
+}
+
+.spotify-link-error {
+  margin: 0;
+  min-height: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #ff6b6b;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.spotify-link-error.visible {
+  opacity: 1;
 }
 .track-thumbnail{
   width: clamp(80px, 8vw, 120px);

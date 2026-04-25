@@ -24,6 +24,11 @@ const MusicModule = (function() {
     spotifyMoodBtn: document.getElementById('spotify-mood'),
     spotifyMoodDropdown: document.querySelector('.spotify-mood-dropdown'),
     spotifyMoodOptions: document.querySelectorAll('.spotify-mood-option'),
+    spotifyLinkBtn: document.getElementById('spotify-link'),
+    spotifyLinkDropdown: document.querySelector('.spotify-link-dropdown'),
+    spotifyLinkInput: document.getElementById('spotify-link-input'),
+    spotifyLinkLoad: document.getElementById('spotify-link-load'),
+    spotifyLinkError: document.querySelector('.spotify-link-error'),
     // Source toggle and panels
     sourceOptions: document.querySelectorAll('.source-option'),
     musicPlayer: document.querySelector('.music-player'),
@@ -104,16 +109,30 @@ const MusicModule = (function() {
     `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
 
   /**
+   * Extracts a Spotify playlist ID from a sharable link or URI.
+   * Accepts open.spotify.com/playlist/<id>, the intl-XX variant, and spotify:playlist:<id>.
+   * Returns null when no ID can be parsed.
+   */
+  const parseSpotifyPlaylistId = (input) => {
+    if (!input) return null;
+    const match = String(input).trim().match(/playlist[:/]([A-Za-z0-9]+)/);
+    return match ? match[1] : null;
+  };
+
+  /**
    * Shows a notification popup about SoundCloud music source
    * @param {string} selectionType - The type of selection ('genre' or 'mood')
    * @param {string} selectionValue - The selected value
    */
-  const showMusicNotification = (selectionType = null, selectionValue = null) => {
+  const showMusicNotification = (selectionType = null, selectionValue = null, overrideName = null, overrideInfo = null) => {
     // Get current active selection to show in notification
     let currentInfo = 'Lofi Girl';
     let selectionName = 'Lofi';
-    
-    if (selectionType && selectionValue && playlistUrls[selectionValue]) {
+
+    if (overrideName) {
+      selectionName = overrideName;
+      currentInfo = overrideInfo || '';
+    } else if (selectionType && selectionValue && playlistUrls[selectionValue]) {
       currentInfo = playlistUrls[selectionValue].artist;
       selectionName = selectionValue.charAt(0).toUpperCase() + selectionValue.slice(1);
     } else {
@@ -138,12 +157,13 @@ const MusicModule = (function() {
     }
     
     const sourceLabel = currentSource === 'spotify' ? 'Spotify' : 'SoundCloud';
+    const showInfo = currentInfo && (currentSource === 'soundcloud' || overrideInfo);
     const notification = document.createElement('div');
     notification.id = 'music-notification';
     notification.innerHTML = `
       <div class="notification-content">
         <p>Playing: ${selectionName}</p>
-        <p class="playlist-info">${sourceLabel}${currentSource === 'soundcloud' ? ` · ${currentInfo}` : ''}</p>
+        <p class="playlist-info">${sourceLabel}${showInfo ? ` · ${currentInfo}` : ''}</p>
       </div>
     `;
     
@@ -441,12 +461,19 @@ const MusicModule = (function() {
   };
 
   /**
-   * Loads a playlist into the Spotify embed iframe
-   * @param {string} key - Playlist key from playlistUrls
+   * Loads a playlist into the Spotify embed iframe.
+   * Accepts either a key into playlistUrls (string) or a selection object
+   * — including { type: 'custom', value: <playlistId> } for user-pasted links.
    */
-  const loadSpotifyPlaylist = (key) => {
+  const loadSpotifyPlaylist = (sel) => {
+    if (!elements.spotifyEmbed) return;
+    if (sel && typeof sel === 'object' && sel.type === 'custom' && sel.value) {
+      elements.spotifyEmbed.src = buildSpotifyEmbedUrl(sel.value);
+      return;
+    }
+    const key = typeof sel === 'string' ? sel : sel?.value;
     const playlist = playlistUrls[key];
-    if (!playlist || !playlist.spotifyId || !elements.spotifyEmbed) return;
+    if (!playlist || !playlist.spotifyId) return;
     elements.spotifyEmbed.src = buildSpotifyEmbedUrl(playlist.spotifyId);
   };
 
@@ -469,8 +496,12 @@ const MusicModule = (function() {
         if (savedSels.soundcloud && playlistUrls[savedSels.soundcloud.value] && !playlistUrls[savedSels.soundcloud.value].spotifyOnly) {
           selections.soundcloud = savedSels.soundcloud;
         }
-        if (savedSels.spotify && playlistUrls[savedSels.spotify.value]) {
-          selections.spotify = savedSels.spotify;
+        if (savedSels.spotify) {
+          if (savedSels.spotify.type === 'custom' && savedSels.spotify.value) {
+            selections.spotify = savedSels.spotify;
+          } else if (playlistUrls[savedSels.spotify.value]) {
+            selections.spotify = savedSels.spotify;
+          }
         }
       }
     } catch {}
@@ -538,7 +569,7 @@ const MusicModule = (function() {
       elements.tasteSoundcloud.hidden = true;
       elements.tasteSpotify.hidden = false;
       elements.musicPlayer?.classList.add('music-player--spotify');
-      loadSpotifyPlaylist(selections.spotify.value);
+      loadSpotifyPlaylist(selections.spotify);
       syncSpotifyActiveState();
       if (!localStorage.getItem(SPOTIFY_INTRO_KEY)) {
         showSpotifyInstructions();
@@ -678,11 +709,39 @@ const MusicModule = (function() {
     if (!event.target.closest('.taste-spotify .mood-container')) {
       elements.spotifyMoodDropdown?.classList.remove('show');
     }
+    if (!event.target.closest('.taste-spotify .link-container')) {
+      elements.spotifyLinkDropdown?.classList.remove('show');
+    }
   };
 
   const toggleSpotifyDropdown = (type) => {
     const dropdown = type === 'genre' ? elements.spotifyGenreDropdown : elements.spotifyMoodDropdown;
     dropdown?.classList.toggle('show');
+  };
+
+  const setSpotifyLinkError = (message) => {
+    if (!elements.spotifyLinkError) return;
+    elements.spotifyLinkError.textContent = message || '';
+    elements.spotifyLinkError.classList.toggle('visible', !!message);
+  };
+
+  /**
+   * Validates the pasted Spotify link, loads it into the embed, and
+   * persists it as the current Spotify selection so it survives reload.
+   */
+  const loadCustomSpotifyPlaylist = () => {
+    const id = parseSpotifyPlaylistId(elements.spotifyLinkInput?.value);
+    if (!id) {
+      setSpotifyLinkError("That doesn't look like a Spotify playlist link.");
+      return;
+    }
+    setSpotifyLinkError('');
+    selections.spotify = { type: 'custom', value: id };
+    saveSelections();
+    syncSpotifyActiveState();
+    loadSpotifyPlaylist(selections.spotify);
+    elements.spotifyLinkDropdown?.classList.remove('show');
+    showMusicNotification(null, null, 'Your playlist', 'Custom Spotify link');
   };
 
   return {
@@ -710,7 +769,7 @@ const MusicModule = (function() {
         elements.tasteSoundcloud.hidden = true;
         elements.tasteSpotify.hidden = false;
         elements.musicPlayer?.classList.add('music-player--spotify');
-        loadSpotifyPlaylist(selections.spotify.value);
+        loadSpotifyPlaylist(selections.spotify);
       }
 
       // Reflect saved selections in active button states for both pickers
@@ -748,6 +807,29 @@ const MusicModule = (function() {
       elements.spotifyMoodOptions.forEach(option => {
         option.addEventListener('click', () => handleSpotifySelection('mood', option.dataset.mood));
       });
+
+      // Custom Spotify playlist link
+      if (elements.spotifyLinkBtn) {
+        elements.spotifyLinkBtn.addEventListener('click', () => {
+          elements.spotifyLinkDropdown?.classList.toggle('show');
+          if (elements.spotifyLinkDropdown?.classList.contains('show')) {
+            setSpotifyLinkError('');
+            setTimeout(() => elements.spotifyLinkInput?.focus(), 0);
+          }
+        });
+      }
+      if (elements.spotifyLinkLoad) {
+        elements.spotifyLinkLoad.addEventListener('click', loadCustomSpotifyPlaylist);
+      }
+      if (elements.spotifyLinkInput) {
+        elements.spotifyLinkInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            loadCustomSpotifyPlaylist();
+          }
+        });
+        elements.spotifyLinkInput.addEventListener('input', () => setSpotifyLinkError(''));
+      }
 
       document.addEventListener('click', handleClickOutside);
     }
