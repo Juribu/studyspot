@@ -118,9 +118,19 @@
                         <div class="player-spotify" hidden>
                             <iframe id="spotify-embed" title="Spotify player" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share" allowtransparency="true"></iframe>
                         </div>
+
+                        <!-- Spotify mode: slim always-visible input bar below the embed.
+                             Single discoverable control — paste a link, hit Enter or Load. -->
+                        <div class="spotify-input-bar" hidden>
+                            <svg class="spotify-input-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12C24 5.4 18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.84-.179-.96-.6-.122-.421.179-.84.601-.96 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.141zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                            </svg>
+                            <input type="text" id="spotify-link-input" class="spotify-link-input" placeholder="Paste a Spotify playlist link to use your own" spellcheck="false" autocomplete="off" />
+                            <button id="spotify-link-load" class="spotify-link-load" type="button">Load</button>
+                        </div>
                     </div>
-                    
-                    <!-- Music preference buttons -->
+
+                    <!-- Music preference buttons (SoundCloud only — Spotify uses the inline bar above) -->
                     <div class="music-taste">
                         <!-- SoundCloud picker -->
                         <div class="taste-group taste-soundcloud">
@@ -135,53 +145,6 @@
                                 <div class="dropdown dropdown--medium genre-dropdown">
                                     <button class="genre-option active" data-genre="lofi">Lofi</button>
                                     <button class="genre-option" data-genre="jazz">Jazz</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Spotify picker (separate icons + dropdowns; never mixes with SoundCloud) -->
-                        <div class="taste-group taste-spotify" hidden>
-                            <div class="mood-container">
-                                <button id="spotify-mood" class="spotify-picker-btn" title="Pick a mood">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M12 3 L13.5 10.5 L21 12 L13.5 13.5 L12 21 L10.5 13.5 L3 12 L10.5 10.5 Z"/>
-                                    </svg>
-                                </button>
-                                <div class="dropdown dropdown--medium spotify-mood-dropdown">
-                                    <button class="spotify-mood-option active" data-mood="focus">Focus</button>
-                                    <button class="spotify-mood-option" data-mood="coding">Coding</button>
-                                    <button class="spotify-mood-option" data-mood="brain">Brain Food</button>
-                                    <button class="spotify-mood-option" data-mood="instrumental">Instrumental</button>
-                                </div>
-                            </div>
-                            <div class="genre-container">
-                                <button id="spotify-genre" class="spotify-picker-btn" title="Pick a genre">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M9 18V5l12-2v13"/>
-                                        <circle cx="6" cy="18" r="3"/>
-                                        <circle cx="18" cy="16" r="3"/>
-                                    </svg>
-                                </button>
-                                <div class="dropdown dropdown--medium spotify-genre-dropdown">
-                                    <button class="spotify-genre-option active" data-genre="lofi">Lofi</button>
-                                    <button class="spotify-genre-option" data-genre="jazz">Jazz</button>
-                                    <button class="spotify-genre-option" data-genre="piano">Piano</button>
-                                    <button class="spotify-genre-option" data-genre="classical">Classical</button>
-                                    <button class="spotify-genre-option" data-genre="ambient">Ambient</button>
-                                </div>
-                            </div>
-                            <div class="link-container">
-                                <button id="spotify-link" class="spotify-picker-btn" title="Paste your own Spotify playlist link">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.41 1.41"/>
-                                        <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.41-1.41"/>
-                                    </svg>
-                                </button>
-                                <div class="dropdown spotify-link-dropdown">
-                                    <p class="spotify-link-hint">Paste a Spotify playlist link to play it here. Open any playlist in Spotify, hit <strong>Share &rarr; Copy link</strong>, then paste below.</p>
-                                    <input type="text" id="spotify-link-input" class="spotify-link-input" placeholder="https://open.spotify.com/playlist/..." spellcheck="false" autocomplete="off" />
-                                    <button id="spotify-link-load" class="spotify-link-load">Load playlist</button>
-                                    <p class="spotify-link-error" aria-live="polite"></p>
                                 </div>
                             </div>
                         </div>

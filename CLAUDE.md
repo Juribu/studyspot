@@ -76,6 +76,18 @@ Don't deviate from this — `js/main.js` calls `.init()` on each module by globa
 
 **Git commit style** (from `git log`): short lowercase imperative subject lines, sometimes with a `+` for follow-up work in the same commit (e.g. "added mp4backgrounds + make blocks adjustable", "fixed timer counting inconsistency + overall stats only show pomodoro time but still logs breaks"). No conventional-commit prefixes.
 
+## Keeping this file up to date
+Update CLAUDE.md only when a task changes something **durable** about the project — not after every task. Triggers:
+- A new JS module, asset folder, or top-level file (update the directory tree + module load order notes)
+- A new `localStorage` key or a renamed/migrated one (update the localStorage list)
+- A new convention or a shift in an existing one (module pattern, comment style, commit style, etc.)
+- A new gotcha worth warning future-Claude about (a non-obvious constraint, an embed quirk, a load-order trap)
+- A new external runtime dependency or deployment change
+
+Do **not** update for: bug fixes, refactors that don't change conventions, in-progress work, or anything that belongs in a commit message. When in doubt, skip.
+
+After any update, echo back the exact diff (added/removed/changed lines) in the chat reply so the change can be sanity-checked.
+
 ## How to run things
 - **Run locally**: `open /Users/jay/Desktop/studyspot/index.html` (macOS) or just double-click. No install, no server needed for the basics.
 - **Serve over HTTP** (only needed if you hit autoplay or CORS issues with embeds): `python3 -m http.server 8000` from the repo root, then visit `http://localhost:8000/`.

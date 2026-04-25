@@ -17,91 +17,51 @@ const MusicModule = (function() {
     moodBtn: document.getElementById('mood'),
     moodDropdown: document.querySelector('.mood-dropdown'),
     moodOptions: document.querySelectorAll('.mood-option'),
-    // Spotify picker (parallel UI)
-    spotifyGenreBtn: document.getElementById('spotify-genre'),
-    spotifyGenreDropdown: document.querySelector('.spotify-genre-dropdown'),
-    spotifyGenreOptions: document.querySelectorAll('.spotify-genre-option'),
-    spotifyMoodBtn: document.getElementById('spotify-mood'),
-    spotifyMoodDropdown: document.querySelector('.spotify-mood-dropdown'),
-    spotifyMoodOptions: document.querySelectorAll('.spotify-mood-option'),
-    spotifyLinkBtn: document.getElementById('spotify-link'),
-    spotifyLinkDropdown: document.querySelector('.spotify-link-dropdown'),
+    // Spotify inline link bar (always visible below the embed)
+    spotifyInputBar: document.querySelector('.spotify-input-bar'),
     spotifyLinkInput: document.getElementById('spotify-link-input'),
     spotifyLinkLoad: document.getElementById('spotify-link-load'),
-    spotifyLinkError: document.querySelector('.spotify-link-error'),
     // Source toggle and panels
     sourceOptions: document.querySelectorAll('.source-option'),
     musicPlayer: document.querySelector('.music-player'),
     soundcloudPanel: document.querySelector('.player-soundcloud'),
     spotifyPanel: document.querySelector('.player-spotify'),
     spotifyEmbed: document.getElementById('spotify-embed'),
-    tasteSoundcloud: document.querySelector('.taste-soundcloud'),
-    tasteSpotify: document.querySelector('.taste-spotify')
+    tasteSoundcloud: document.querySelector('.taste-soundcloud')
   };
 
   const SOURCE_KEY = 'studyspot_music_source';
   const SELECTIONS_KEY = 'studyspot_music_selections';
   const SPOTIFY_INTRO_KEY = 'studyspot_spotify_intro_seen';
 
+  /** Default Spotify playlist used until the user pastes their own (Lofi Beats). */
+  const SAMPLE_SPOTIFY_ID = '37i9dQZF1DWWQRwui0ExPn';
+
   /** SoundCloud player widget */
   let widget = null;
   let isPlaying = false;
   let hasShownNotification = false;
   let currentSource = 'soundcloud';
-  /** Per-source last selection — kept independent so toggling sources never bleeds state */
+  /** Per-source last selection — kept independent so toggling sources never bleeds state.
+   *  Spotify only has two states: 'sample' (default lofi playlist) or 'custom' (pasted link). */
   const selections = {
     soundcloud: { type: 'genre', value: 'lofi' },
-    spotify: { type: 'genre', value: 'lofi' }
+    spotify: { type: 'sample', value: SAMPLE_SPOTIFY_ID }
   };
 
-  /** Playlist URLs for different genres and moods */
+  /** Playlist URLs for SoundCloud genres and moods. Spotify uses raw playlist IDs (sample or custom). */
   const playlistUrls = {
-    // Genres
     lofi: {
       url: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
-      artist: 'Lofi Girl',
-      spotifyId: '37i9dQZF1DWWQRwui0ExPn' // Lofi Beats
+      artist: 'Lofi Girl'
     },
     jazz: {
       url: 'https://soundcloud.com/relaxcafemusic/sets/10-hours-jazz-relaxing-music',
-      artist: 'RelaxCafeMusic',
-      spotifyId: '37i9dQZF1DXbITWG1ZJKYt' // Jazz in the Background
+      artist: 'RelaxCafeMusic'
     },
-    piano: {
-      artist: 'Spotify',
-      spotifyOnly: true,
-      spotifyId: '37i9dQZF1DX4sWSpwq3LiO' // Peaceful Piano
-    },
-    classical: {
-      artist: 'Spotify',
-      spotifyOnly: true,
-      spotifyId: '37i9dQZF1DWWEJlAGA9gs0' // Classical Essentials
-    },
-    ambient: {
-      artist: 'Spotify',
-      spotifyOnly: true,
-      spotifyId: '37i9dQZF1DX3Ogo9pFvBkY' // Ambient Chill
-    },
-    // Moods
     focus: {
       url: 'https://soundcloud.com/relaxdaily/sets/deep-focus-music-studying-concentration-work',
-      artist: 'RelaxDaily',
-      spotifyId: '37i9dQZF1DWZeKCadgRdKQ' // Deep Focus
-    },
-    coding: {
-      artist: 'Spotify',
-      spotifyOnly: true,
-      spotifyId: '37i9dQZF1DXcZQmaR5dY9k' // Coding Mode
-    },
-    brain: {
-      artist: 'Spotify',
-      spotifyOnly: true,
-      spotifyId: '37i9dQZF1DWXLeA8Omikj7' // Brain Food
-    },
-    instrumental: {
-      artist: 'Spotify',
-      spotifyOnly: true,
-      spotifyId: '37i9dQZF1DX9sIqqvKsjG8' // Instrumental Study
+      artist: 'RelaxDaily'
     }
   };
 
@@ -445,9 +405,8 @@ const MusicModule = (function() {
       dropdown.classList.remove('show');
     }
     
-    // Only SoundCloud-supported playlists reach this handler (Spotify uses its own picker)
     const playlist = playlistUrls[value];
-    if (playlist && !playlist.spotifyOnly) {
+    if (playlist) {
       selections.soundcloud = { type, value };
       saveSelections();
 
@@ -461,20 +420,13 @@ const MusicModule = (function() {
   };
 
   /**
-   * Loads a playlist into the Spotify embed iframe.
-   * Accepts either a key into playlistUrls (string) or a selection object
-   * — including { type: 'custom', value: <playlistId> } for user-pasted links.
+   * Loads a Spotify playlist into the embed iframe.
+   * `sel` is a selection object: { type: 'sample'|'custom', value: <playlistId> }.
    */
   const loadSpotifyPlaylist = (sel) => {
     if (!elements.spotifyEmbed) return;
-    if (sel && typeof sel === 'object' && sel.type === 'custom' && sel.value) {
-      elements.spotifyEmbed.src = buildSpotifyEmbedUrl(sel.value);
-      return;
-    }
-    const key = typeof sel === 'string' ? sel : sel?.value;
-    const playlist = playlistUrls[key];
-    if (!playlist || !playlist.spotifyId) return;
-    elements.spotifyEmbed.src = buildSpotifyEmbedUrl(playlist.spotifyId);
+    const id = sel?.value || SAMPLE_SPOTIFY_ID;
+    elements.spotifyEmbed.src = buildSpotifyEmbedUrl(id);
   };
 
   const saveSource = () => {
@@ -493,29 +445,16 @@ const MusicModule = (function() {
       }
       const savedSels = JSON.parse(localStorage.getItem(SELECTIONS_KEY));
       if (savedSels && typeof savedSels === 'object') {
-        if (savedSels.soundcloud && playlistUrls[savedSels.soundcloud.value] && !playlistUrls[savedSels.soundcloud.value].spotifyOnly) {
+        if (savedSels.soundcloud && playlistUrls[savedSels.soundcloud.value]) {
           selections.soundcloud = savedSels.soundcloud;
         }
-        if (savedSels.spotify) {
-          if (savedSels.spotify.type === 'custom' && savedSels.spotify.value) {
-            selections.spotify = savedSels.spotify;
-          } else if (playlistUrls[savedSels.spotify.value]) {
-            selections.spotify = savedSels.spotify;
-          }
+        // Spotify only persists user-pasted links now; legacy genre/mood selections
+        // are silently dropped and the user falls back to the sample playlist.
+        if (savedSels.spotify && savedSels.spotify.type === 'custom' && savedSels.spotify.value) {
+          selections.spotify = savedSels.spotify;
         }
       }
     } catch {}
-  };
-
-  /**
-   * Updates active state on Spotify picker option buttons to match current selection
-   */
-  const syncSpotifyActiveState = () => {
-    const sel = selections.spotify;
-    elements.spotifyGenreOptions.forEach(o => o.classList.toggle('active',
-      sel.type === 'genre' && o.dataset.genre === sel.value));
-    elements.spotifyMoodOptions.forEach(o => o.classList.toggle('active',
-      sel.type === 'mood' && o.dataset.mood === sel.value));
   };
 
   /**
@@ -527,23 +466,6 @@ const MusicModule = (function() {
       sel.type === 'genre' && o.dataset.genre === sel.value));
     elements.moodOptions.forEach(o => o.classList.toggle('active',
       sel.type === 'mood' && o.dataset.mood === sel.value));
-  };
-
-  /**
-   * Handler for Spotify-side picker selections (parallel to handleSelection)
-   */
-  const handleSpotifySelection = (type, value) => {
-    if (!playlistUrls[value]) return;
-    selections.spotify = { type, value };
-    saveSelections();
-    syncSpotifyActiveState();
-
-    // Close both Spotify dropdowns
-    elements.spotifyGenreDropdown?.classList.remove('show');
-    elements.spotifyMoodDropdown?.classList.remove('show');
-
-    loadSpotifyPlaylist(value);
-    showMusicNotification(type, value);
   };
 
   /**
@@ -566,23 +488,32 @@ const MusicModule = (function() {
       if (widget && isPlaying) widget.pause();
       elements.soundcloudPanel.hidden = true;
       elements.spotifyPanel.hidden = false;
+      if (elements.spotifyInputBar) elements.spotifyInputBar.hidden = false;
       elements.tasteSoundcloud.hidden = true;
-      elements.tasteSpotify.hidden = false;
       elements.musicPlayer?.classList.add('music-player--spotify');
       loadSpotifyPlaylist(selections.spotify);
-      syncSpotifyActiveState();
       if (!localStorage.getItem(SPOTIFY_INTRO_KEY)) {
         showSpotifyInstructions();
       }
     } else {
       if (elements.spotifyEmbed) elements.spotifyEmbed.src = '';
       elements.spotifyPanel.hidden = true;
+      if (elements.spotifyInputBar) elements.spotifyInputBar.hidden = true;
       elements.soundcloudPanel.hidden = false;
-      elements.tasteSpotify.hidden = true;
       elements.tasteSoundcloud.hidden = false;
       elements.musicPlayer?.classList.remove('music-player--spotify');
       syncSoundcloudActiveState();
     }
+  };
+
+  /** Pre-fills the input with the current playlist URL when one is loaded
+   *  so users can see / edit / copy what's currently playing. */
+  const reflectCurrentSpotifyInInput = () => {
+    if (!elements.spotifyLinkInput) return;
+    const isCustom = selections.spotify?.type === 'custom' && !!selections.spotify.value;
+    elements.spotifyLinkInput.value = isCustom
+      ? `https://open.spotify.com/playlist/${selections.spotify.value}`
+      : '';
   };
 
   /**
@@ -703,26 +634,14 @@ const MusicModule = (function() {
     if (!event.target.closest('.taste-soundcloud .mood-container')) {
       elements.moodDropdown?.classList.remove('show');
     }
-    if (!event.target.closest('.taste-spotify .genre-container')) {
-      elements.spotifyGenreDropdown?.classList.remove('show');
-    }
-    if (!event.target.closest('.taste-spotify .mood-container')) {
-      elements.spotifyMoodDropdown?.classList.remove('show');
-    }
-    if (!event.target.closest('.taste-spotify .link-container')) {
-      elements.spotifyLinkDropdown?.classList.remove('show');
-    }
   };
 
-  const toggleSpotifyDropdown = (type) => {
-    const dropdown = type === 'genre' ? elements.spotifyGenreDropdown : elements.spotifyMoodDropdown;
-    dropdown?.classList.toggle('show');
-  };
-
-  const setSpotifyLinkError = (message) => {
-    if (!elements.spotifyLinkError) return;
-    elements.spotifyLinkError.textContent = message || '';
-    elements.spotifyLinkError.classList.toggle('visible', !!message);
+  /** Brief red-border flash on the input bar when the pasted link is invalid. */
+  const flashSpotifyLinkError = () => {
+    const bar = elements.spotifyInputBar;
+    if (!bar) return;
+    bar.classList.add('error');
+    setTimeout(() => bar.classList.remove('error'), 1200);
   };
 
   /**
@@ -732,15 +651,14 @@ const MusicModule = (function() {
   const loadCustomSpotifyPlaylist = () => {
     const id = parseSpotifyPlaylistId(elements.spotifyLinkInput?.value);
     if (!id) {
-      setSpotifyLinkError("That doesn't look like a Spotify playlist link.");
+      flashSpotifyLinkError();
       return;
     }
-    setSpotifyLinkError('');
     selections.spotify = { type: 'custom', value: id };
     saveSelections();
-    syncSpotifyActiveState();
     loadSpotifyPlaylist(selections.spotify);
-    elements.spotifyLinkDropdown?.classList.remove('show');
+    reflectCurrentSpotifyInInput();
+    elements.spotifyLinkInput?.blur();
     showMusicNotification(null, null, 'Your playlist', 'Custom Spotify link');
   };
 
@@ -766,15 +684,15 @@ const MusicModule = (function() {
         });
         elements.soundcloudPanel.hidden = true;
         elements.spotifyPanel.hidden = false;
+        if (elements.spotifyInputBar) elements.spotifyInputBar.hidden = false;
         elements.tasteSoundcloud.hidden = true;
-        elements.tasteSpotify.hidden = false;
         elements.musicPlayer?.classList.add('music-player--spotify');
         loadSpotifyPlaylist(selections.spotify);
       }
 
-      // Reflect saved selections in active button states for both pickers
+      // Reflect saved selections in active button states (SoundCloud only)
       syncSoundcloudActiveState();
-      syncSpotifyActiveState();
+      reflectCurrentSpotifyInInput();
 
       if (elements.playBtn) elements.playBtn.addEventListener('click', togglePlayPause);
       if (elements.prevBtn) elements.prevBtn.addEventListener('click', previousTrack);
@@ -794,30 +712,7 @@ const MusicModule = (function() {
         option.addEventListener('click', () => handleSelection('mood', option.dataset.mood));
       });
 
-      // Spotify picker (parallel UI, separate handlers)
-      if (elements.spotifyGenreBtn) {
-        elements.spotifyGenreBtn.addEventListener('click', () => toggleSpotifyDropdown('genre'));
-      }
-      elements.spotifyGenreOptions.forEach(option => {
-        option.addEventListener('click', () => handleSpotifySelection('genre', option.dataset.genre));
-      });
-      if (elements.spotifyMoodBtn) {
-        elements.spotifyMoodBtn.addEventListener('click', () => toggleSpotifyDropdown('mood'));
-      }
-      elements.spotifyMoodOptions.forEach(option => {
-        option.addEventListener('click', () => handleSpotifySelection('mood', option.dataset.mood));
-      });
-
-      // Custom Spotify playlist link
-      if (elements.spotifyLinkBtn) {
-        elements.spotifyLinkBtn.addEventListener('click', () => {
-          elements.spotifyLinkDropdown?.classList.toggle('show');
-          if (elements.spotifyLinkDropdown?.classList.contains('show')) {
-            setSpotifyLinkError('');
-            setTimeout(() => elements.spotifyLinkInput?.focus(), 0);
-          }
-        });
-      }
+      // Spotify inline link bar
       if (elements.spotifyLinkLoad) {
         elements.spotifyLinkLoad.addEventListener('click', loadCustomSpotifyPlaylist);
       }
@@ -828,7 +723,9 @@ const MusicModule = (function() {
             loadCustomSpotifyPlaylist();
           }
         });
-        elements.spotifyLinkInput.addEventListener('input', () => setSpotifyLinkError(''));
+        elements.spotifyLinkInput.addEventListener('input', () => {
+          elements.spotifyInputBar?.classList.remove('error');
+        });
       }
 
       document.addEventListener('click', handleClickOutside);
