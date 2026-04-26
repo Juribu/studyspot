@@ -1715,9 +1715,36 @@ button:hover {
   color: #9ecbff;
 }
 
+#reset-layout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+#reset-layout-btn[hidden] {
+  display: none;
+}
+
+#reset-layout-btn svg {
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#reset-layout-btn:hover svg {
+  opacity: 1;
+  transform: rotate(-30deg);
+}
+
 /* Blocks that have been frozen into free-floating mode.
-   Once set, they stay fixed for the rest of the session — a page
-   reload restores the default flex layout. */
+   Geometry is persisted to localStorage (studyspot_layout) and
+   restored on reload; the reset button clears it. */
 .pomodoro-timer.floating,
 .music-section.floating,
 .todo-list.floating {

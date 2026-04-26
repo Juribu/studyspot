@@ -1,17 +1,85 @@
 /**
  * Layout Module
  * Lets the user toggle an edit mode to drag and resize the three utility
- * blocks (timer, music, tasks). Positions are not persisted — every session
- * starts in the default flex layout.
+ * blocks (timer, music, tasks). Positions persist across reloads via
+ * localStorage; the reset button clears them and restores the default flex
+ * layout.
  * @module LayoutModule
  */
 const LayoutModule = (function() {
   const BLOCK_SELECTOR = '.pomodoro-timer, .music-section, .todo-list';
   const MIN_W = 200;
   const MIN_H = 100;
+  const STORAGE_KEY = 'studyspot_layout';
 
   let editMode = false;
   let toggleBtn = null;
+  let resetBtn = null;
+
+  /**
+   * Stable per-block identifier used as the localStorage key for each block's
+   * geometry. Tied to the class names in BLOCK_SELECTOR.
+   */
+  const blockKey = (block) => {
+    if (block.classList.contains('pomodoro-timer')) return 'pomodoro-timer';
+    if (block.classList.contains('music-section')) return 'music-section';
+    if (block.classList.contains('todo-list')) return 'todo-list';
+    return null;
+  };
+
+  const loadPositions = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  /**
+   * Snapshot the geometry of every floating block to localStorage. Called
+   * after each drag/resize gesture ends.
+   */
+  const savePositions = () => {
+    const data = {};
+    document.querySelectorAll(BLOCK_SELECTOR).forEach(block => {
+      if (!block.classList.contains('floating')) return;
+      const key = blockKey(block);
+      if (!key) return;
+      data[key] = {
+        left: block.style.left,
+        top: block.style.top,
+        width: block.style.width,
+        height: block.style.height,
+      };
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  };
+
+  /**
+   * On boot, restore any previously-saved geometry by floating each block
+   * with its stored width/height/left/top. Drag handlers and resize handles
+   * are wired immediately so entering edit mode is instant.
+   */
+  const restoreSavedPositions = () => {
+    const data = loadPositions();
+    if (!data) return;
+    document.querySelectorAll(BLOCK_SELECTOR).forEach(block => {
+      const key = blockKey(block);
+      if (!key || !data[key]) return;
+      const pos = data[key];
+      block.style.width = pos.width;
+      block.style.height = pos.height;
+      block.style.left = pos.left;
+      block.style.top = pos.top;
+      block.classList.add('floating');
+      addResizeHandle(block);
+      if (!block.dataset.dragAttached) {
+        attachDrag(block);
+        block.dataset.dragAttached = '1';
+      }
+    });
+  };
 
   /**
    * Freeze each block at its current computed position by switching it to
@@ -32,8 +100,37 @@ const LayoutModule = (function() {
       block.style.top = rect.top + 'px';
       block.classList.add('floating');
       addResizeHandle(block);
-      attachDrag(block);
+      // Drag handlers attach exactly once per block. Re-entering edit mode
+      // (e.g. after a reset) re-freezes positions but must not stack listeners.
+      if (!block.dataset.dragAttached) {
+        attachDrag(block);
+        block.dataset.dragAttached = '1';
+      }
     });
+  };
+
+  /**
+   * Drop the floating state and inline geometry so blocks fall back into the
+   * default flex layout. Saved positions are cleared so reloading also lands
+   * in the default layout. Resize handles are removed; drag listeners stay
+   * attached (cheap, idempotent) so a subsequent re-freeze is instant.
+   * If still in edit mode, re-freeze on the next frame so the user can keep
+   * dragging from the freshly restored default positions.
+   */
+  const resetBlocks = () => {
+    document.querySelectorAll(BLOCK_SELECTOR).forEach(block => {
+      block.classList.remove('floating');
+      block.style.width = '';
+      block.style.height = '';
+      block.style.left = '';
+      block.style.top = '';
+      const handle = block.querySelector('.resize-handle');
+      if (handle) handle.remove();
+    });
+    localStorage.removeItem(STORAGE_KEY);
+    if (editMode) {
+      requestAnimationFrame(freezeBlocks);
+    }
   };
 
   const addResizeHandle = (block) => {
@@ -71,6 +168,7 @@ const LayoutModule = (function() {
       if (!dragging) return;
       dragging = false;
       try { block.releasePointerCapture(e.pointerId); } catch (_) {}
+      savePositions();
     };
     block.addEventListener('pointerup', endDrag);
     block.addEventListener('pointercancel', endDrag);
@@ -102,6 +200,7 @@ const LayoutModule = (function() {
       if (!resizing) return;
       resizing = false;
       try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
+      savePositions();
     };
     handle.addEventListener('pointerup', endResize);
     handle.addEventListener('pointercancel', endResize);
@@ -112,6 +211,7 @@ const LayoutModule = (function() {
     document.body.classList.toggle('edit-mode', editMode);
     toggleBtn.classList.toggle('active', editMode);
     toggleBtn.setAttribute('aria-pressed', String(editMode));
+    if (resetBtn) resetBtn.hidden = !editMode;
     if (editMode) freezeBlocks();
   };
 
@@ -120,6 +220,9 @@ const LayoutModule = (function() {
       toggleBtn = document.getElementById('edit-layout-btn');
       if (!toggleBtn) return;
       toggleBtn.addEventListener('click', toggle);
+      resetBtn = document.getElementById('reset-layout-btn');
+      if (resetBtn) resetBtn.addEventListener('click', resetBlocks);
+      restoreSavedPositions();
     }
   };
 })();

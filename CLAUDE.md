@@ -61,7 +61,7 @@ const SomeModule = (function() {
 Don't deviate from this — `js/main.js` calls `.init()` on each module by global name and silently skips any that aren't defined.
 
 **localStorage keys** are namespaced with the `studyspot_` prefix:
-- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`
+- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`, `studyspot_layout`
 - One legacy key (`studyspot.background` with a dot) is migrated on read in `js/background.js` — pattern to follow if you ever rename a key.
 
 **Reads from `localStorage` are wrapped in try/catch** and fall back to defaults. Writes are not (they should rarely throw). Match this.
@@ -103,7 +103,7 @@ After any update, echo back the exact diff (added/removed/changed lines) in the 
 - **Spotify embed has fixed render heights** (~152px compact, ~352px+ large). Stretching to anything in between leaves a dark blank band inside the iframe — `style.css` shrinks the picker column in Spotify mode (via `:has()`) so the music-section doesn't grow past the embed's natural height. Don't undo this without thinking.
 - **Spotify Premium required for full-track playback**; free accounts get 30-second previews. Login happens entirely inside Spotify's iframe — StudySpot never touches credentials.
 - **SoundCloud Widget API is loaded by URL at runtime.** `js/music.js` injects the `<script>` and instantiates `SC.Widget(iframe)` after `READY`. If `SC` is undefined, the script tag failed to load (network/blocker).
-- **Layout edit mode does not persist.** Reloading restores the default flex layout — by design (per `js/layout.js` header comment).
+- **Layout edit mode persists** via `studyspot_layout`. Block geometry is restored at boot (blocks come up `position: fixed` with their saved width/height/left/top); the reset button is the only way back to the default flex layout.
 - **`align-items: stretch` on `.music-section`** is what makes the music-player and picker-column the same height. Beware when changing one side's height.
 - **Stats only counts `type === 'pomodoro'`** for totals, streak, weekly chart — short/long breaks are recorded but excluded from "study time" math (see `js/stats.js`). This is intentional per recent commit.
 - **Timer uses real-elapsed-time sync**, not a naïve countdown. `endTime = Date.now() + remaining`, polled every 250ms; resyncs on `visibilitychange` so background tabs don't drift.
