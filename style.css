@@ -1744,7 +1744,10 @@ button:hover {
 
 /* Blocks that have been frozen into free-floating mode.
    Geometry is persisted to localStorage (studyspot_layout) and
-   restored on reload; the reset button clears it. */
+   restored on reload; the reset button clears it. Resizing applies
+   `transform: scale()` so contents grow/shrink with the block — the
+   top-left origin keeps the visual position locked to `left`/`top`. */
+.center-display.floating,
 .pomodoro-timer.floating,
 .music-section.floating,
 .todo-list.floating {
@@ -1753,10 +1756,20 @@ button:hover {
   max-width: none !important;
   max-height: none !important;
   z-index: 50;
+  transform-origin: top left;
+}
+
+/* Free-resize blocks (todo + Spotify embed) get independent W/H. Drop the
+   inner caps that would otherwise leave empty space inside a taller block. */
+.todo-list.floating .todo-items {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
 }
 
 /* Edit-mode visual + interaction lock: the block itself handles pointer
    events for dragging, children are inert so clicks don't toggle UI. */
+body.edit-mode .center-display.floating,
 body.edit-mode .pomodoro-timer.floating,
 body.edit-mode .music-section.floating,
 body.edit-mode .todo-list.floating {
@@ -1766,6 +1779,7 @@ body.edit-mode .todo-list.floating {
   user-select: none;
 }
 
+body.edit-mode .center-display.floating *,
 body.edit-mode .pomodoro-timer.floating *,
 body.edit-mode .music-section.floating *,
 body.edit-mode .todo-list.floating * {

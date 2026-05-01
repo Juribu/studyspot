@@ -16,7 +16,7 @@ StudySpot is a single-page productivity dashboard you keep open on a laptop whil
 ## Architecture
 Every JS file is a self-contained IIFE module that exposes one global (`TimerModule`, `MusicModule`, etc.) with at minimum an `init()` method. `js/main.js` owns the boot order — it lists every module and calls `init()` on each after `DOMContentLoaded`. Modules don't import each other; they reference each other through the globals (e.g. `TimerModule` calls `StudyStatsModule.recordSession(...)` directly, guarded by `typeof StudyStatsModule !== 'undefined'`).
 
-UI is laid out in `index.html` once at load. JS modules attach behavior to existing DOM nodes by ID/class. The "edit layout" mode (`js/layout.js`) freezes the three main blocks (`.pomodoro-timer`, `.music-section`, `.todo-list`) into `position: fixed` so the user can drag/resize them; positions are *not* persisted.
+UI is laid out in `index.html` once at load. JS modules attach behavior to existing DOM nodes by ID/class. The "edit layout" mode (`js/layout.js`) freezes the four main blocks (`.center-display`, `.pomodoro-timer`, `.music-section`, `.todo-list`) into `position: fixed` so the user can drag/resize them; positions are *not* persisted.
 
 All styles live in a single `style.css`. It is large (~2,200 lines) and section-commented (`/* ====== HEADER ====== */`). It uses a few CSS custom properties on `:root`, lots of `clamp()` for fluid sizing, and `:has()` selectors in places (e.g. lifting the music-section z-index when its dropdown is open).
 
