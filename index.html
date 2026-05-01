@@ -18,10 +18,13 @@
     <!-- Font loading for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Inter font from Google Fonts -->
+    <!-- Inter font from Google Fonts.
+         display=optional avoids font-swap CLS: if Inter isn't ready in ~100ms the
+         system fallback is kept for this paint, and Inter takes over on the next
+         visit (cached). display=swap would always swap and reflow text. -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-        rel="styleshee">
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=optional"
+        rel="stylesheet">
 
     <!-- Our custom styles -->
     <link rel="stylesheet" href="style.css" />

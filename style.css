@@ -316,6 +316,14 @@ body::after {
   text-align: center;
 }
 
+/* Reserve vertical space for the quote so swapping in a longer/shorter
+   one doesn't reflow the centered layout (CLS). 2.4em ≈ two lines. */
+#quote {
+  display: block;
+  line-height: 1.2;
+  min-height: 2.4em;
+}
+
 /* ==========================================================================
    POMODORO TIMER COMPONENT
    ========================================================================== */
