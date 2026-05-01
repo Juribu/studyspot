@@ -28,10 +28,105 @@ const LayoutModule = (function() {
   const BLOCK_SELECTOR = '.center-display, .pomodoro-timer, .music-section, .todo-list';
   const MIN_SCALE = 0.4;
   const STORAGE_KEY = 'studyspot_layout';
+  const SLOTS_STORAGE_KEY = 'studyspot_layout_slots';
 
   let editMode = false;
+  let saveMode = false;
   let toggleBtn = null;
   let resetBtn = null;
+  let saveBtn = null;
+  let presetBtns = [];
+
+  // Reserved screen regions to keep blocks clear of fixed UI.
+  // Title sits at top:80, bottom-section sits ~5% + margin from the bottom.
+  const TOP_RESERVE = 140;
+  const BOTTOM_RESERVE = 110;
+  const SIDE_PAD = 40;
+  const BLOCK_GAP = 20;
+
+  /**
+   * Preset layouts. Each function receives a `blocks` map keyed by
+   * `blockKey()` (with `origW`/`origH` already populated and mutable
+   * `left`/`top`/`scaleX`/`scaleY` slots) plus the current viewport size.
+   * Mutations are flushed to the DOM by `applyPreset()`.
+   */
+  const PRESETS = {
+    // Centered Tower — all four blocks stacked vertically down the screen center.
+    '1'(blocks, vpW, vpH) {
+      const cd = blocks['center-display'];
+      const pt = blocks['pomodoro-timer'];
+      const ms = blocks['music-section'];
+      const tl = blocks['todo-list'];
+      [cd, pt, ms, tl].forEach(b => { b.scaleX = 1; b.scaleY = 1; });
+
+      const totalH = cd.origH + pt.origH + ms.origH + tl.origH + BLOCK_GAP * 3;
+      const startTop = Math.max(
+        TOP_RESERVE,
+        (vpH - BOTTOM_RESERVE - totalH) / 2 + 20
+      );
+
+      cd.left = (vpW - cd.origW) / 2;
+      cd.top = startTop;
+      pt.left = (vpW - pt.origW) / 2;
+      pt.top = cd.top + cd.origH + BLOCK_GAP;
+      ms.left = (vpW - ms.origW) / 2;
+      ms.top = pt.top + pt.origH + BLOCK_GAP;
+      tl.left = (vpW - tl.origW) / 2;
+      tl.top = ms.top + ms.origH + BLOCK_GAP;
+    },
+
+    // Compact 2×2 — clock/timer on top, music/todo below, all centered tightly.
+    '2'(blocks, vpW, vpH) {
+      const cd = blocks['center-display'];
+      const pt = blocks['pomodoro-timer'];
+      const ms = blocks['music-section'];
+      const tl = blocks['todo-list'];
+      [cd, pt, ms, tl].forEach(b => { b.scaleX = 1; b.scaleY = 1; });
+
+      const leftColW = Math.max(cd.origW, ms.origW);
+      const rightColW = Math.max(pt.origW, tl.origW);
+      const totalW = leftColW + rightColW + BLOCK_GAP;
+      const topRowH = Math.max(cd.origH, pt.origH);
+      const totalH = topRowH + Math.max(ms.origH, tl.origH) + BLOCK_GAP;
+      const leftStart = (vpW - totalW) / 2;
+      const topStart = Math.max(TOP_RESERVE, (vpH - BOTTOM_RESERVE - totalH) / 2 + 20);
+
+      cd.left = leftStart + (leftColW - cd.origW) / 2;
+      cd.top = topStart + (topRowH - cd.origH) / 2;
+      pt.left = leftStart + leftColW + BLOCK_GAP + (rightColW - pt.origW) / 2;
+      pt.top = topStart + (topRowH - pt.origH) / 2;
+      ms.left = leftStart + (leftColW - ms.origW) / 2;
+      ms.top = topStart + topRowH + BLOCK_GAP;
+      tl.left = leftStart + leftColW + BLOCK_GAP + (rightColW - tl.origW) / 2;
+      tl.top = topStart + topRowH + BLOCK_GAP;
+    },
+
+    // Bottom bar — clock vertically centered, three tools tight against the bottom.
+    '3'(blocks, vpW, vpH) {
+      const cd = blocks['center-display'];
+      const pt = blocks['pomodoro-timer'];
+      const ms = blocks['music-section'];
+      const tl = blocks['todo-list'];
+      [cd, pt, ms, tl].forEach(b => { b.scaleX = 1; b.scaleY = 1; });
+
+      const rowH = Math.max(pt.origH, ms.origH, tl.origH);
+      const rowTop = vpH - rowH - BOTTOM_RESERVE;
+
+      // Clock+quote vertically centered in the space above the tool row.
+      cd.left = (vpW - cd.origW) / 2;
+      cd.top = Math.max(TOP_RESERVE, (rowTop - cd.origH) / 2);
+
+      // Tool row centered horizontally, blocks pinned together with BLOCK_GAP.
+      const totalRowW = pt.origW + ms.origW + tl.origW + BLOCK_GAP * 2;
+      const rowLeft = (vpW - totalRowW) / 2;
+      pt.left = rowLeft;
+      pt.top = rowTop;
+      ms.left = pt.left + pt.origW + BLOCK_GAP;
+      ms.top = rowTop;
+      tl.left = ms.left + ms.origW + BLOCK_GAP;
+      tl.top = rowTop;
+    },
+  };
 
   /**
    * Stable per-block identifier used as the localStorage key for each block's
@@ -356,13 +451,133 @@ const LayoutModule = (function() {
     handle.addEventListener('pointercancel', endResize);
   };
 
-  const toggle = () => {
-    editMode = !editMode;
+  const setEditMode = (on) => {
+    editMode = on;
     document.body.classList.toggle('edit-mode', editMode);
     toggleBtn.classList.toggle('active', editMode);
     toggleBtn.setAttribute('aria-pressed', String(editMode));
     if (resetBtn) resetBtn.hidden = !editMode;
+    if (saveBtn) saveBtn.hidden = !editMode;
+    presetBtns.forEach(btn => { btn.hidden = !editMode; });
+    if (!editMode) setSaveMode(false);
+  };
+
+  const setSaveMode = (on) => {
+    saveMode = on;
+    if (saveBtn) {
+      saveBtn.classList.toggle('active', saveMode);
+      saveBtn.setAttribute('aria-pressed', String(saveMode));
+    }
+    presetBtns.forEach(btn => btn.classList.toggle('save-target', saveMode));
+  };
+
+  const toggle = () => {
+    setEditMode(!editMode);
     if (editMode) freezeBlocks();
+  };
+
+  const loadSlots = () => {
+    try {
+      const raw = localStorage.getItem(SLOTS_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      return {};
+    }
+  };
+
+  /**
+   * Capture the current floating-block geometry into the named slot.
+   * Mirrors the shape used by `savePositions` / `restoreSavedPositions`
+   * so a saved slot can be replayed identically.
+   */
+  const saveSlot = (name) => {
+    const slots = loadSlots();
+    const data = {};
+    document.querySelectorAll(BLOCK_SELECTOR).forEach(block => {
+      if (!block.classList.contains('floating')) return;
+      const key = blockKey(block);
+      if (!key) return;
+      data[key] = {
+        left: block.style.left,
+        top: block.style.top,
+        origW: block.dataset.origW,
+        origH: block.dataset.origH,
+        scaleX: block.dataset.scaleX,
+        scaleY: block.dataset.scaleY,
+      };
+    });
+    slots[name] = data;
+    localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(slots));
+    const btn = presetBtns.find(b => b.dataset.preset === name);
+    if (btn) btn.classList.add('has-saved');
+  };
+
+  /** Replay a previously-saved geometry blob onto the current DOM. */
+  const applySavedGeometry = (data) => {
+    document.querySelectorAll(BLOCK_SELECTOR).forEach(block => {
+      const key = blockKey(block);
+      if (!key || !data[key]) return;
+      const pos = data[key];
+      const origW = parseFloat(pos.origW);
+      const origH = parseFloat(pos.origH);
+      if (!origW || !origH) return;
+      const scaleX = parseFloat(pos.scaleX) || 1;
+      const scaleY = parseFloat(pos.scaleY) || 1;
+      applyFloatingStyles(block, origW, origH, scaleX, scaleY, pos.left, pos.top);
+      addResizeHandle(block);
+      if (!block.dataset.dragAttached) {
+        attachDrag(block);
+        block.dataset.dragAttached = '1';
+      }
+    });
+  };
+
+  /**
+   * Apply a slot by name. In save mode, captures the current geometry into
+   * that slot instead. Otherwise loads the user-saved version of the slot
+   * if one exists, falling back to the built-in preset. Auto-enters edit
+   * mode so the user can fine-tune.
+   */
+  const applyPreset = (name) => {
+    if (saveMode) {
+      if (!editMode) return;
+      saveSlot(name);
+      setSaveMode(false);
+      return;
+    }
+    if (!editMode) {
+      setEditMode(true);
+      freezeBlocks();
+    }
+    const saved = loadSlots()[name];
+    if (saved) {
+      applySavedGeometry(saved);
+      savePositions();
+      return;
+    }
+    const preset = PRESETS[name];
+    if (!preset) return;
+    const vpW = window.innerWidth;
+    const vpH = window.innerHeight;
+    const blocks = {};
+    document.querySelectorAll(BLOCK_SELECTOR).forEach(block => {
+      const key = blockKey(block);
+      if (!key) return;
+      const origW = parseFloat(block.dataset.origW);
+      const origH = parseFloat(block.dataset.origH);
+      if (!origW || !origH) return;
+      blocks[key] = { el: block, origW, origH, scaleX: 1, scaleY: 1, left: 0, top: 0 };
+    });
+    if (!blocks['center-display']) return;
+    preset(blocks, vpW, vpH);
+    Object.values(blocks).forEach(b => {
+      b.el.dataset.scaleX = b.scaleX;
+      b.el.dataset.scaleY = b.scaleY;
+      b.el.style.left = Math.round(b.left) + 'px';
+      b.el.style.top = Math.round(b.top) + 'px';
+      applyScaleStrategy(b.el);
+    });
+    savePositions();
   };
 
   return {
@@ -372,6 +587,14 @@ const LayoutModule = (function() {
       toggleBtn.addEventListener('click', toggle);
       resetBtn = document.getElementById('reset-layout-btn');
       if (resetBtn) resetBtn.addEventListener('click', resetBlocks);
+      saveBtn = document.getElementById('save-layout-btn');
+      if (saveBtn) saveBtn.addEventListener('click', () => setSaveMode(!saveMode));
+      presetBtns = Array.from(document.querySelectorAll('.layout-preset-btn'));
+      const slots = loadSlots();
+      presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+        if (slots[btn.dataset.preset]) btn.classList.add('has-saved');
+      });
       restoreSavedPositions();
     }
   };

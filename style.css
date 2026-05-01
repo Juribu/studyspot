@@ -1730,6 +1730,80 @@ button:hover {
   display: none;
 }
 
+.layout-preset-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: white;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layout-preset-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+.layout-preset-btn[hidden] {
+  display: none;
+}
+
+/* Slot has user-saved geometry — subtle blue tint to distinguish from preset. */
+.layout-preset-btn.has-saved {
+  border-color: rgba(158, 203, 255, 0.7);
+  color: #cfe3ff;
+}
+
+/* Save mode: slot buttons become save targets — pulse a brighter outline. */
+.layout-preset-btn.save-target {
+  border-color: #9ecbff;
+  color: #9ecbff;
+  background: rgba(158, 203, 255, 0.12);
+}
+
+#save-layout-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: white;
+  cursor: pointer;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+#save-layout-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+#save-layout-btn.active {
+  opacity: 1;
+  background: rgba(158, 203, 255, 0.2);
+  border-color: #9ecbff;
+  color: #9ecbff;
+}
+
+#save-layout-btn[hidden] {
+  display: none;
+}
+
 #reset-layout-btn svg {
   width: 24px;
   height: 24px;
