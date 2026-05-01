@@ -35,6 +35,7 @@ const LayoutModule = (function() {
   let toggleBtn = null;
   let resetBtn = null;
   let saveBtn = null;
+  let doneBtn = null;
   let presetBtns = [];
 
   // Reserved screen regions to keep blocks clear of fixed UI.
@@ -456,9 +457,14 @@ const LayoutModule = (function() {
     document.body.classList.toggle('edit-mode', editMode);
     toggleBtn.classList.toggle('active', editMode);
     toggleBtn.setAttribute('aria-pressed', String(editMode));
-    if (resetBtn) resetBtn.hidden = !editMode;
-    if (saveBtn) saveBtn.hidden = !editMode;
-    presetBtns.forEach(btn => { btn.hidden = !editMode; });
+    // Visibility of the edit-mode controls is driven by CSS (.layout-edit-controls
+    // animates open under body.edit-mode). Just sync tabindex and aria-hidden so
+    // the controls aren't focusable while collapsed.
+    const wrapper = document.querySelector('.layout-edit-controls');
+    if (wrapper) wrapper.setAttribute('aria-hidden', String(!editMode));
+    [saveBtn, resetBtn, doneBtn, ...presetBtns].forEach(btn => {
+      if (btn) btn.tabIndex = editMode ? 0 : -1;
+    });
     if (!editMode) setSaveMode(false);
   };
 
@@ -589,6 +595,8 @@ const LayoutModule = (function() {
       if (resetBtn) resetBtn.addEventListener('click', resetBlocks);
       saveBtn = document.getElementById('save-layout-btn');
       if (saveBtn) saveBtn.addEventListener('click', () => setSaveMode(!saveMode));
+      doneBtn = document.getElementById('done-layout-btn');
+      if (doneBtn) doneBtn.addEventListener('click', () => { if (editMode) setEditMode(false); });
       presetBtns = Array.from(document.querySelectorAll('.layout-preset-btn'));
       const slots = loadSlots();
       presetBtns.forEach(btn => {

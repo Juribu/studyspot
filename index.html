@@ -235,16 +235,23 @@
                     <line x1="12" y1="2" x2="12" y2="22"/>
                 </svg>
             </button>
-            <button id="save-layout-btn" title="Save current layout to a slot — then click 1, 2, or 3" aria-pressed="false" hidden>Save</button>
-            <button class="layout-preset-btn" data-preset="1" title="Layout 1 — Centered tower" hidden>1</button>
-            <button class="layout-preset-btn" data-preset="2" title="Layout 2 — Compact 2×2" hidden>2</button>
-            <button class="layout-preset-btn" data-preset="3" title="Layout 3 — Bottom bar" hidden>3</button>
-            <button id="reset-layout-btn" title="Reset layout to default" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <polyline points="3 4 3 10 9 10"/>
-                    <path d="M3.51 14.5A9 9 0 1 0 6 5.3L3 8"/>
-                </svg>
-            </button>
+            <div class="layout-edit-controls" aria-hidden="true">
+                <button id="save-layout-btn" title="Save current layout to a slot — then click 1, 2, or 3" aria-pressed="false" tabindex="-1">Save</button>
+                <button class="layout-preset-btn" data-preset="1" title="Layout 1 — Centered tower" tabindex="-1">1</button>
+                <button class="layout-preset-btn" data-preset="2" title="Layout 2 — Compact 2×2" tabindex="-1">2</button>
+                <button class="layout-preset-btn" data-preset="3" title="Layout 3 — Bottom bar" tabindex="-1">3</button>
+                <button id="reset-layout-btn" title="Reset layout to default" tabindex="-1">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 4 3 10 9 10"/>
+                        <path d="M3.51 14.5A9 9 0 1 0 6 5.3L3 8"/>
+                    </svg>
+                </button>
+                <button id="done-layout-btn" title="Done editing layout" tabindex="-1">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="5 12 10 17 19 7"/>
+                    </svg>
+                </button>
+            </div>
             <button class="full-screen"><img src="assets/icons/fullscreen.svg"
                     alt="change to full full-screen"></button>
         </div>

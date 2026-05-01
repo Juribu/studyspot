@@ -1724,11 +1724,52 @@ button:hover {
   align-items: center;
   justify-content: center;
   color: white;
+  flex: 0 0 auto;
 }
 
-#reset-layout-btn[hidden] {
-  display: none;
+
+/* Container that holds the edit-mode-only controls. Collapses to width 0 when
+   not editing; expands rightward with a slight slide when edit mode turns on.
+   Children fade/slide in with a staggered delay for a polished cascade. */
+.layout-edit-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow: hidden;
+  max-width: 420px;
+  opacity: 1;
+  transform: translateX(0);
+  transition: max-width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.25s ease,
+              transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              margin 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  margin-left: 0;
 }
+
+body:not(.edit-mode) .layout-edit-controls {
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(12px);
+  margin-left: -16px;
+  pointer-events: none;
+}
+
+.layout-edit-controls > * {
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+body:not(.edit-mode) .layout-edit-controls > * {
+  opacity: 0;
+  transform: translateX(8px);
+}
+
+body.edit-mode .layout-edit-controls > *:nth-child(1) { transition-delay: 0.06s; }
+body.edit-mode .layout-edit-controls > *:nth-child(2) { transition-delay: 0.10s; }
+body.edit-mode .layout-edit-controls > *:nth-child(3) { transition-delay: 0.14s; }
+body.edit-mode .layout-edit-controls > *:nth-child(4) { transition-delay: 0.18s; }
+body.edit-mode .layout-edit-controls > *:nth-child(5) { transition-delay: 0.22s; }
+body.edit-mode .layout-edit-controls > *:nth-child(6) { transition-delay: 0.26s; }
 
 .layout-preset-btn {
   background: none;
@@ -1743,20 +1784,16 @@ button:hover {
   font-weight: 500;
   font-family: inherit;
   opacity: 0.8;
-  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
 }
 
 .layout-preset-btn:hover {
   opacity: 1;
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.75);
-}
-
-.layout-preset-btn[hidden] {
-  display: none;
 }
 
 /* Slot has user-saved geometry — subtle blue tint to distinguish from preset. */
@@ -1784,7 +1821,8 @@ button:hover {
   font-weight: 500;
   font-family: inherit;
   opacity: 0.8;
-  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 #save-layout-btn:hover {
@@ -1800,8 +1838,28 @@ button:hover {
   color: #9ecbff;
 }
 
-#save-layout-btn[hidden] {
-  display: none;
+#done-layout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7ee2a8;
+  flex: 0 0 auto;
+}
+
+#done-layout-btn svg {
+  width: 26px;
+  height: 26px;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#done-layout-btn:hover svg {
+  opacity: 1;
+  transform: scale(1.08);
 }
 
 #reset-layout-btn svg {
