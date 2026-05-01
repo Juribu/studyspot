@@ -1,0 +1,23 @@
+{
+  "name": "studyspot",
+  "version": "1.0.0",
+  "description": "A single-screen productivity dashboard that bundles all the tools you need to get into focus mode — a clock, pomodoro timer, todo list, lofi/jazz music player, motivational quotes, study stats, and a picker for aesthetic backgrounds — into one clean page you can throw up on your laptop while you work on your main monitor.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Juribu/studyspot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Juribu/studyspot/issues"
+  },
+  "homepage": "https://github.com/Juribu/studyspot#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
