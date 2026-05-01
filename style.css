@@ -204,6 +204,7 @@ body {
   flex-direction: column;
   justify-content: center;
   overflow-x: hidden;
+  overflow-y: auto;
   transition: background-image 0.4s ease;
 }
 
@@ -251,7 +252,8 @@ body::after {
 .main-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100vh;
+  flex: 1;
   width: 100%;
   max-width: 1800px;
   margin: 0 auto;
@@ -264,9 +266,10 @@ body::after {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 95vh;
+  flex: 1;
   flex-wrap: wrap;
   padding: 20px 0;
+  min-height: 0;
 }
 
 .bottom-section{
@@ -274,9 +277,9 @@ body::after {
   justify-content: flex-end;
   align-items: center;
   gap: 16px;
-  height: 5%;
   margin-right: 54px;
   margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .left-section{
@@ -294,7 +297,7 @@ body::after {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  min-height: 100%;
+  height: auto;
   gap: 20px;
   padding: 20px 0px;
   margin-right: 54px;
