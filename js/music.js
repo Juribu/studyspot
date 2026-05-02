@@ -52,12 +52,12 @@ const MusicModule = (function() {
   /** Playlist URLs for SoundCloud genres and moods. Spotify uses raw playlist IDs (sample or custom). */
   const playlistUrls = {
     lofi: {
-      url: 'https://soundcloud.com/lofi_girl/sets/peaceful-piano-music-to-focus',
+      url: 'https://soundcloud.com/lofi_girl/sets/chill-guitar',
       artist: 'Lofi Girl'
     },
     jazz: {
-      url: 'https://soundcloud.com/relaxcafemusic/sets/10-hours-jazz-relaxing-music',
-      artist: 'RelaxCafeMusic'
+      url: 'https://soundcloud.com/jazzhopcafe/sets/the-jazz-hop-cafe-mixes',
+      artist: 'The Jazz Hop Café'
     },
     focus: {
       url: 'https://soundcloud.com/relaxdaily/sets/deep-focus-music-studying-concentration-work',
