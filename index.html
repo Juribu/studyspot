@@ -18,6 +18,13 @@
     <!-- Font loading for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Warm up SoundCloud connections early — the widget script and iframe
+         are injected late by js/music.js, so without these the TCP/TLS
+         handshakes don't start until after all local scripts parse. -->
+    <link rel="preconnect" href="https://w.soundcloud.com" crossorigin>
+    <link rel="preconnect" href="https://api-widget.soundcloud.com" crossorigin>
+    <link rel="dns-prefetch" href="https://i1.sndcdn.com">
+    <link rel="preload" href="https://w.soundcloud.com/player/api.js" as="script" crossorigin>
     <!-- Inter font from Google Fonts.
          display=optional avoids font-swap CLS: if Inter isn't ready in ~100ms the
          system fallback is kept for this paint, and Inter takes over on the next
