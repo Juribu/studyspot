@@ -45,16 +45,12 @@ const MusicModule = (function() {
   /** Per-source last selection — kept independent so toggling sources never bleeds state.
    *  Spotify only has two states: 'sample' (default lofi playlist) or 'custom' (pasted link). */
   const selections = {
-    soundcloud: { type: 'genre', value: 'lofi' },
+    soundcloud: { type: 'genre', value: 'jazz' },
     spotify: { type: 'sample', value: SAMPLE_SPOTIFY_ID }
   };
 
   /** Playlist URLs for SoundCloud genres and moods. Spotify uses raw playlist IDs (sample or custom). */
   const playlistUrls = {
-    lofi: {
-      url: 'https://soundcloud.com/lofi_girl/sets/chill-guitar',
-      artist: 'Lofi Girl'
-    },
     jazz: {
       url: 'https://soundcloud.com/jazzhopcafe/sets/the-jazz-hop-cafe-mixes',
       artist: 'The Jazz Hop Café'
@@ -86,8 +82,8 @@ const MusicModule = (function() {
    */
   const showMusicNotification = (selectionType = null, selectionValue = null, overrideName = null, overrideInfo = null) => {
     // Get current active selection to show in notification
-    let currentInfo = 'Lofi Girl';
-    let selectionName = 'Lofi';
+    let currentInfo = 'The Jazz Hop Café';
+    let selectionName = 'Jazz';
 
     if (overrideName) {
       selectionName = overrideName;
@@ -101,11 +97,11 @@ const MusicModule = (function() {
       
       if (activeGenre) {
         const genreValue = activeGenre.dataset.genre;
-        currentInfo = playlistUrls[genreValue]?.artist || 'Lofi Girl';
+        currentInfo = playlistUrls[genreValue]?.artist || 'The Jazz Hop Café';
         selectionName = genreValue.charAt(0).toUpperCase() + genreValue.slice(1);
       } else if (activeMood) {
         const moodValue = activeMood.dataset.mood;
-        currentInfo = playlistUrls[moodValue]?.artist || 'Lofi Girl';
+        currentInfo = playlistUrls[moodValue]?.artist || 'The Jazz Hop Café';
         selectionName = moodValue.charAt(0).toUpperCase() + moodValue.slice(1);
       }
     }
@@ -202,7 +198,7 @@ const MusicModule = (function() {
    * Creates SoundCloud player widget
    * @param {string} playlistUrl - The URL of the playlist to load
    */
-  const createSoundCloudPlayer = (playlistUrl = playlistUrls.lofi.url) => {
+  const createSoundCloudPlayer = (playlistUrl = playlistUrls.jazz.url) => {
     const existingIframe = document.getElementById('soundcloud-player');
     if (existingIframe) {
       existingIframe.remove();
