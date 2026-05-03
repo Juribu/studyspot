@@ -9,14 +9,37 @@ const TaskModule = (function() {
   const addTaskBtn = document.getElementById('add-task');
   let taskCounter = 2;
 
+  /** Maximum indent level for subtask visual grouping */
+  const MAX_DEPTH = 3;
+  /** Pixels of indent applied per depth level */
+  const DEPTH_PX = 24;
+
+  /**
+   * Applies a depth level to a task element (visual indent + dataset).
+   * @param {HTMLElement} task - .todo-item element
+   * @param {number} depth - 0 = root, up to MAX_DEPTH
+   */
+  const setDepth = (task, depth) => {
+    task.dataset.depth = String(depth);
+    task.style.paddingLeft = depth > 0 ? `${depth * DEPTH_PX}px` : '';
+  };
+
+  /**
+   * Reads a task's current depth, defaulting to 0.
+   * @param {HTMLElement} task - .todo-item element
+   * @returns {number}
+   */
+  const getDepth = (task) => parseInt(task.dataset.depth, 10) || 0;
+
   /**
    * Serializes current tasks from the DOM to a plain array
-   * @returns {Array<{text: string, completed: boolean}>}
+   * @returns {Array<{text: string, completed: boolean, depth: number}>}
    */
   const serializeTasks = () => {
     return Array.from(todoItems.querySelectorAll('.todo-item')).map(item => ({
       text: item.querySelector('.task-label').textContent,
-      completed: item.querySelector('.task-checkbox').checked
+      completed: item.querySelector('.task-checkbox').checked,
+      depth: getDepth(item)
     }));
   };
 
@@ -126,25 +149,29 @@ const TaskModule = (function() {
   };
 
   /**
-   * Creates a new task DOM element with checkbox, label, and options menu
+   * Creates a new task DOM element with checkbox, label, and options menu.
+   * The label is a span (not a <label for>) so clicking the row no longer
+   * toggles completion — only direct checkbox clicks do, and label clicks
+   * enter inline edit mode.
    * @param {string} taskId - Unique identifier for the task
    * @param {string} [taskText='New Task'] - Display text for the task
+   * @param {number} [depth=0] - Indent level for visual subtask grouping
    * @returns {HTMLElement} Complete task element ready for insertion
    */
-  const createTaskElement = (taskId, taskText = 'New Task') => {
+  const createTaskElement = (taskId, taskText = 'New Task', depth = 0) => {
     const task = document.createElement('div');
     task.className = 'todo-item';
     task.innerHTML = `
       <input type="checkbox" id="${taskId}" class="task-checkbox">
-      <label for="${taskId}" class="task-label">${taskText}</label>
+      <span class="task-label">${taskText}</span>
       <div class="task-options-container">
         <button class="task-options">⋮</button>
         <div class="dropdown dropdown--small task-dropdown">
-          <button class="edit-btn">Edit</button>
           <button class="delete-btn">Delete</button>
         </div>
       </div>
     `;
+    setDepth(task, depth);
     return task;
   };
 
@@ -158,10 +185,12 @@ const TaskModule = (function() {
   };
 
   /**
-   * Enables inline editing of task label
+   * Enables inline editing of task label.
+   * Tab/Shift+Tab while editing adjusts the task's indent depth in place.
    * @param {HTMLElement} taskLabel - Label element to edit
    */
   const editTask = (taskLabel) => {
+    const task = taskLabel.closest('.todo-item');
     const input = document.createElement('input');
     Object.assign(input, {
       type: 'text',
@@ -169,57 +198,65 @@ const TaskModule = (function() {
       className: 'task-edit-input'
     });
     input.style.cssText = EDIT_INPUT_STYLE;
-    
+
     taskLabel.style.display = 'none';
     taskLabel.parentNode.insertBefore(input, taskLabel.nextSibling);
     input.focus();
     input.select();
-    
+
     const saveEdit = () => {
       const newText = input.value.trim();
       if (newText) {
         taskLabel.textContent = newText;
         saveTasks();
       }
-      taskLabel.style.display = 'block';
+      taskLabel.style.display = '';
       input.remove();
     };
 
     const cancelEdit = () => {
-      taskLabel.style.display = 'block';
+      taskLabel.style.display = '';
       input.remove();
     };
-    
+
     input.addEventListener('blur', saveEdit);
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') saveEdit();
       else if (e.key === 'Escape') cancelEdit();
+      else if (e.key === 'Tab') {
+        e.preventDefault();
+        const current = getDepth(task);
+        const next = e.shiftKey
+          ? Math.max(0, current - 1)
+          : Math.min(MAX_DEPTH, current + 1);
+        if (next !== current) {
+          setDepth(task, next);
+          saveTasks();
+        }
+      }
     });
   };
 
   /**
-   * Adds event listeners to a task element
+   * Adds event listeners to a task element.
+   * Clicking the label enters edit mode; only direct checkbox clicks toggle
+   * completion (the label is a <span>, not <label for>).
    * @param {HTMLElement} task - Task element to add listeners to
    */
   const addTaskEventListeners = (task) => {
-    // Cache all selectors at once for better performance
     const elements = {
       checkbox: task.querySelector('.task-checkbox'),
       optionsBtn: task.querySelector('.task-options'),
       dropdown: task.querySelector('.task-dropdown'),
-      editBtn: task.querySelector('.edit-btn'),
       deleteBtn: task.querySelector('.delete-btn'),
       taskLabel: task.querySelector('.task-label')
     };
-    
+
     elements.checkbox.addEventListener('change', handleCheckboxChange);
+    elements.taskLabel.addEventListener('click', () => editTask(elements.taskLabel));
     elements.optionsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleDropdown(elements.dropdown);
-    });
-    elements.editBtn.addEventListener('click', () => {
-      elements.dropdown.classList.remove('show');
-      editTask(elements.taskLabel);
     });
     elements.deleteBtn.addEventListener('click', () => {
       task.remove();
@@ -228,7 +265,8 @@ const TaskModule = (function() {
   };
 
   /**
-   * Creates and shows input field for adding new task
+   * Creates and shows input field for adding new task.
+   * Tab/Shift+Tab adjusts a pending depth that's applied when the task is saved.
    */
   const addNewTask = () => {
     if (document.querySelector('.add-task-input')) return;
@@ -240,14 +278,21 @@ const TaskModule = (function() {
       placeholder: 'Enter task name...'
     });
     input.style.cssText = ADD_INPUT_STYLE;
+    input.dataset.depth = '0';
 
     document.querySelector('.todo-header').appendChild(input);
     input.focus();
 
+    const reflectDepth = () => {
+      const d = parseInt(input.dataset.depth, 10) || 0;
+      input.style.marginLeft = d > 0 ? `${d * DEPTH_PX}px` : '';
+    };
+
     const saveTask = () => {
       const taskName = input.value.trim();
       if (taskName) {
-        const newTask = createTaskElement(`task${++taskCounter}`, taskName);
+        const depth = parseInt(input.dataset.depth, 10) || 0;
+        const newTask = createTaskElement(`task${++taskCounter}`, taskName, depth);
         addTaskEventListeners(newTask);
         addTaskToList(newTask);
         saveTasks();
@@ -258,6 +303,15 @@ const TaskModule = (function() {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') saveTask();
       else if (e.key === 'Escape') input.remove();
+      else if (e.key === 'Tab') {
+        e.preventDefault();
+        const current = parseInt(input.dataset.depth, 10) || 0;
+        const next = e.shiftKey
+          ? Math.max(0, current - 1)
+          : Math.min(MAX_DEPTH, current + 1);
+        input.dataset.depth = String(next);
+        reflectDepth();
+      }
     });
     input.addEventListener('blur', () => input.remove());
   };
@@ -283,8 +337,8 @@ const TaskModule = (function() {
     if (saved === null || !Array.isArray(saved)) return false;
 
     todoItems.innerHTML = '';
-    saved.forEach(({ text, completed }) => {
-      const task = createTaskElement(`task${++taskCounter}`, text);
+    saved.forEach(({ text, completed, depth = 0 }) => {
+      const task = createTaskElement(`task${++taskCounter}`, text, depth);
       if (completed) task.querySelector('.task-checkbox').checked = true;
       addTaskEventListeners(task);
       todoItems.appendChild(task);
