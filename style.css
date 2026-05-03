@@ -669,6 +669,16 @@ button:hover {
   display: none;
 }
 
+/* In layout/floating mode every block becomes position: fixed; z-index: 50
+   (its own stacking context), which traps each dropdown's z-index: 2000
+   inside the block. Lift the block while a dropdown is open so the popup
+   paints above sibling blocks (most importantly .todo-list, which sits
+   later in the DOM and would otherwise win on tree order). */
+.music-section:has(.dropdown.show),
+.pomodoro-timer:has(.dropdown.show) {
+  z-index: 2001;
+}
+
 /* Slim "paste your playlist link" pill that sits below the embed,
    right-aligned so it visually anchors the bottom-right of the music
    section without overlaying the iframe (which has its own controls
