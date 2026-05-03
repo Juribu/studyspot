@@ -43,6 +43,14 @@ const StudyStatsModule = (function() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
   };
 
+  // DST-safe day diff: subtracting local-midnight Dates in ms loses/gains an hour
+  // across spring-forward / fall-back, causing Math.floor to be off by one.
+  const daysBetween = (from, to) => {
+    const a = Date.UTC(from.getFullYear(), from.getMonth(), from.getDate());
+    const b = Date.UTC(to.getFullYear(), to.getMonth(), to.getDate());
+    return Math.floor((b - a) / 86400000);
+  };
+
   const recordSession = (session) => {
     const sessions = getSessions();
     sessions.push({
@@ -161,13 +169,54 @@ const StudyStatsModule = (function() {
     sessions.forEach(s => {
       const d = new Date(s.startTime);
       const sessionDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const diff = Math.floor((sessionDay - monday) / (1000 * 60 * 60 * 24));
+      const diff = daysBetween(monday, sessionDay);
       if (diff >= 0 && diff < 7) {
         dailyMinutes[diff] += Math.round(s.durationSeconds / 60);
       }
     });
 
     return dailyMinutes;
+  };
+
+  /**
+   * Builds a 12-week × 7-day grid of daily study minutes (Mon-top → Sun-bottom).
+   * Returns a flat array of 84 cells in column-major order (week 0 day 0..6, week 1 ...).
+   */
+  const getHeatmapData = () => {
+    const WEEKS = 12;
+    const sessions = getSessions().filter(s => s.type === 'pomodoro');
+    const now = new Date();
+    const todayDow = now.getDay();
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    monday.setDate(monday.getDate() - ((todayDow + 6) % 7));
+    const start = new Date(monday);
+    start.setDate(start.getDate() - (WEEKS - 1) * 7);
+
+    const totalDays = WEEKS * 7;
+    const minutesByIdx = new Array(totalDays).fill(0);
+    sessions.forEach(s => {
+      const d = new Date(s.startTime);
+      const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const diff = daysBetween(start, day);
+      if (diff >= 0 && diff < totalDays) {
+        minutesByIdx[diff] += Math.round(s.durationSeconds / 60);
+      }
+    });
+
+    const todayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    const cells = [];
+    for (let w = 0; w < WEEKS; w++) {
+      for (let d = 0; d < 7; d++) {
+        const cellDate = new Date(start);
+        cellDate.setDate(cellDate.getDate() + w * 7 + d);
+        const isFuture = cellDate > now && `${cellDate.getFullYear()}-${cellDate.getMonth()}-${cellDate.getDate()}` !== todayKey;
+        const minutes = minutesByIdx[w * 7 + d];
+        const dateLabel = cellDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const isToday = `${cellDate.getFullYear()}-${cellDate.getMonth()}-${cellDate.getDate()}` === todayKey;
+        cells.push({ minutes, dateLabel, isFuture, isToday, week: w, dow: d });
+      }
+    }
+    return cells;
   };
 
   /**
@@ -282,6 +331,47 @@ const StudyStatsModule = (function() {
       </div>`;
   };
 
+  const buildHeatmap = () => {
+    const cells = getHeatmapData();
+    const goalMin = Math.max(getDailyGoal() / 60, 1);
+
+    const levelFor = (mins) => {
+      if (mins === 0) return 0;
+      const ratio = mins / goalMin;
+      if (ratio >= 1) return 4;
+      if (ratio >= 0.5) return 3;
+      if (ratio >= 0.25) return 2;
+      return 1;
+    };
+
+    let cellsHTML = '';
+    cells.forEach(c => {
+      if (c.isFuture) {
+        cellsHTML += `<div class="heatmap-cell heatmap-cell--future" style="grid-column:${c.week + 1};grid-row:${c.dow + 1}"></div>`;
+        return;
+      }
+      const level = levelFor(c.minutes);
+      const todayCls = c.isToday ? ' heatmap-cell--today' : '';
+      const tip = c.minutes > 0 ? `${c.minutes}m on ${c.dateLabel}` : `No sessions on ${c.dateLabel}`;
+      cellsHTML += `<div class="heatmap-cell heatmap-cell--l${level}${todayCls}" style="grid-column:${c.week + 1};grid-row:${c.dow + 1}" title="${tip}"></div>`;
+    });
+
+    return `
+      <div class="stats-heatmap-section">
+        <h4 class="stats-section-title">Last 12 Weeks</h4>
+        <div class="stats-heatmap">${cellsHTML}</div>
+        <div class="heatmap-legend">
+          <span>Less</span>
+          <div class="heatmap-cell heatmap-cell--l0 heatmap-legend-cell"></div>
+          <div class="heatmap-cell heatmap-cell--l1 heatmap-legend-cell"></div>
+          <div class="heatmap-cell heatmap-cell--l2 heatmap-legend-cell"></div>
+          <div class="heatmap-cell heatmap-cell--l3 heatmap-legend-cell"></div>
+          <div class="heatmap-cell heatmap-cell--l4 heatmap-legend-cell"></div>
+          <span>More</span>
+        </div>
+      </div>`;
+  };
+
   const buildSessionHistory = (filter) => {
     const grouped = getFilteredSessions(filter);
     const dateKeys = Object.keys(grouped);
@@ -302,7 +392,13 @@ const StudyStatsModule = (function() {
     let html = '';
     const limit = filter === 'all' ? 14 : 7;
     dateKeys.slice(0, limit).forEach(dateKey => {
-      html += `<div class="stats-date-group"><div class="stats-date-label">${dateKey}</div>`;
+      const focusSeconds = grouped[dateKey]
+        .filter(s => s.type === 'pomodoro')
+        .reduce((sum, s) => sum + s.durationSeconds, 0);
+      const focusBadge = focusSeconds > 0
+        ? `<span class="stats-date-total">${formatDuration(focusSeconds)} focused</span>`
+        : '';
+      html += `<div class="stats-date-group"><div class="stats-date-label">${dateKey}${focusBadge}</div>`;
       grouped[dateKey].forEach(s => {
         const tc = TYPE_COLORS[s.type] || TYPE_COLORS.pomodoro;
         html += `
@@ -454,6 +550,8 @@ const StudyStatsModule = (function() {
           </div>
 
           ${buildWeeklyChart()}
+
+          ${buildHeatmap()}
 
           <div class="stats-history">
             <div class="stats-tabs">
