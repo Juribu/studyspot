@@ -301,9 +301,12 @@ const StudyStatsModule = (function() {
 
   const buildWeeklyChart = () => {
     const data = getWeeklyChartData();
-    const max = Math.max(...data, 1); // avoid division by 0
+    const goalMin = Math.max(Math.round(getDailyGoal() / 60), 1);
+    // Include goal in scale so the goal line is always on-axis and bars share its scale
+    const max = Math.max(...data, goalMin, 1);
 
     let barsHTML = '';
+    let labelsHTML = '';
     const now = new Date();
     const todayDow = (now.getDay() + 6) % 7; // 0=Mon
 
@@ -318,15 +321,23 @@ const StudyStatsModule = (function() {
               ${!isEmpty ? `<span class="chart-bar-tooltip">${mins}m</span>` : ''}
             </div>
           </div>
-          <span class="chart-day-label">${DAY_LABELS[i]}</span>
         </div>`;
+      labelsHTML += `<span class="chart-day-label ${isToday ? 'chart-day-label--today' : ''}">${DAY_LABELS[i]}</span>`;
     });
+
+    const goalLinePercent = Math.min((goalMin / max) * 100, 100);
 
     return `
       <div class="stats-chart-section">
         <h4 class="stats-section-title">This Week</h4>
         <div class="stats-chart">
-          ${barsHTML}
+          <div class="chart-plot">
+            <div class="chart-goal-line" style="bottom: ${goalLinePercent}%" title="Daily goal: ${goalMin}m">
+              <span class="chart-goal-label">${goalMin}m goal</span>
+            </div>
+            ${barsHTML}
+          </div>
+          <div class="chart-labels">${labelsHTML}</div>
         </div>
       </div>`;
   };
