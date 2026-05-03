@@ -204,7 +204,10 @@ const TaskModule = (function() {
     input.focus();
     input.select();
 
-    const saveEdit = () => {
+    const handleBlur = () => saveEdit();
+
+    const saveEdit = (chainNew = false) => {
+      input.removeEventListener('blur', handleBlur);
       const newText = input.value.trim();
       if (newText) {
         taskLabel.textContent = newText;
@@ -212,16 +215,18 @@ const TaskModule = (function() {
       }
       taskLabel.style.display = '';
       input.remove();
+      if (chainNew) addNewTask(task, getDepth(task));
     };
 
     const cancelEdit = () => {
+      input.removeEventListener('blur', handleBlur);
       taskLabel.style.display = '';
       input.remove();
     };
 
-    input.addEventListener('blur', saveEdit);
+    input.addEventListener('blur', handleBlur);
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') saveEdit();
+      if (e.key === 'Enter') saveEdit(true);
       else if (e.key === 'Escape') cancelEdit();
       else if (e.key === 'Tab') {
         e.preventDefault();
@@ -267,8 +272,12 @@ const TaskModule = (function() {
   /**
    * Creates and shows input field for adding new task.
    * Tab/Shift+Tab adjusts a pending depth that's applied when the task is saved.
+   * @param {HTMLElement} [insertAfter=null] - When set, the input is placed
+   *   directly below this task (and the saved task lands at that position),
+   *   so chained Enter creates siblings inline rather than at the top.
+   * @param {number} [initialDepth=0] - Starting indent level for the input.
    */
-  const addNewTask = () => {
+  const addNewTask = (insertAfter = null, initialDepth = 0) => {
     if (document.querySelector('.add-task-input')) return;
 
     const input = document.createElement('input');
@@ -278,31 +287,52 @@ const TaskModule = (function() {
       placeholder: 'Enter task name...'
     });
     input.style.cssText = ADD_INPUT_STYLE;
-    input.dataset.depth = '0';
-
-    document.querySelector('.todo-header').appendChild(input);
-    input.focus();
+    input.dataset.depth = String(initialDepth);
 
     const reflectDepth = () => {
       const d = parseInt(input.dataset.depth, 10) || 0;
       input.style.marginLeft = d > 0 ? `${d * DEPTH_PX}px` : '';
     };
 
-    const saveTask = () => {
-      const taskName = input.value.trim();
-      if (taskName) {
-        const depth = parseInt(input.dataset.depth, 10) || 0;
-        const newTask = createTaskElement(`task${++taskCounter}`, taskName, depth);
-        addTaskEventListeners(newTask);
-        addTaskToList(newTask);
-        saveTasks();
-      }
+    if (insertAfter && insertAfter.parentNode) {
+      insertAfter.parentNode.insertBefore(input, insertAfter.nextSibling);
+    } else {
+      document.querySelector('.todo-header').appendChild(input);
+    }
+    reflectDepth();
+    input.focus();
+
+    const handleBlur = () => discard();
+
+    const discard = () => {
+      input.removeEventListener('blur', handleBlur);
       input.remove();
     };
 
+    const saveTask = (chainNew = false) => {
+      input.removeEventListener('blur', handleBlur);
+      let createdTask = null;
+      const taskName = input.value.trim();
+      if (taskName) {
+        const depth = parseInt(input.dataset.depth, 10) || 0;
+        createdTask = createTaskElement(`task${++taskCounter}`, taskName, depth);
+        addTaskEventListeners(createdTask);
+        if (insertAfter && insertAfter.parentNode) {
+          input.parentNode.insertBefore(createdTask, input);
+        } else {
+          addTaskToList(createdTask);
+        }
+        saveTasks();
+      }
+      input.remove();
+      if (chainNew && createdTask) {
+        addNewTask(createdTask, getDepth(createdTask));
+      }
+    };
+
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') saveTask();
-      else if (e.key === 'Escape') input.remove();
+      if (e.key === 'Enter') saveTask(true);
+      else if (e.key === 'Escape') discard();
       else if (e.key === 'Tab') {
         e.preventDefault();
         const current = parseInt(input.dataset.depth, 10) || 0;
@@ -313,7 +343,7 @@ const TaskModule = (function() {
         reflectDepth();
       }
     });
-    input.addEventListener('blur', () => input.remove());
+    input.addEventListener('blur', handleBlur);
   };
 
   /**
