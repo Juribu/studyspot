@@ -1005,6 +1005,60 @@ button:hover {
   transition: all 0.3s ease;
 }
 
+/* Notion-style 6-dot drag handle. Sits before the checkbox in the row's
+   flex order, but uses opacity (not display) for hover-reveal so the row
+   layout never jitters when the cursor enters/leaves. */
+.task-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 18px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  margin-right: -4px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.todo-item:hover .task-drag-handle {
+  opacity: 1;
+}
+
+.task-drag-handle:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.task-drag-handle:active {
+  cursor: grabbing;
+}
+
+.task-drag-handle svg {
+  width: 8px;
+  height: 14px;
+  display: block;
+  pointer-events: none;
+}
+
+/* While being dragged the row dims so the user can see where the cursor
+   would drop relative to the rest of the list. */
+.todo-item.dragging {
+  opacity: 0.4;
+}
+
+/* Drop indicator: a 2px line at the top or bottom edge of the hovered row,
+   matching whichever half of the row the cursor is in. */
+.todo-item.drop-above {
+  box-shadow: inset 0 2px 0 0 rgba(255, 255, 255, 0.75);
+}
+
+.todo-item.drop-below {
+  box-shadow: inset 0 -2px 0 0 rgba(255, 255, 255, 0.75);
+}
+
 .task-checkbox {
   width: 18px;
   height: 18px;

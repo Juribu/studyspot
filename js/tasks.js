@@ -81,27 +81,85 @@ const TaskModule = (function() {
   `;
 
   /**
-   * Moves all completed tasks to the bottom of the task list
-   * Maintains visual separation between completed and incomplete tasks
+   * Builds groups from the current DOM order: each group starts with a
+   * depth-0 task and contains all immediately following greater-depth tasks
+   * (its subtasks). A leading orphan subtask (no preceding depth-0) becomes
+   * its own group so the partition stays total.
+   * @returns {HTMLElement[][]}
    */
-  const moveCompletedTasksToBottom = () => {
-    const allTasks = Array.from(todoItems.querySelectorAll('.todo-item'));
-    const { completedTasks, incompleteTasks } = allTasks.reduce((acc, task) => {
-      const isCompleted = task.querySelector('.task-checkbox').checked;
-      acc[isCompleted ? 'completedTasks' : 'incompleteTasks'].push(task);
-      return acc;
-    }, { completedTasks: [], incompleteTasks: [] });
-    
-    todoItems.innerHTML = '';
-    [...incompleteTasks, ...completedTasks].forEach(task => todoItems.appendChild(task));
+  const buildGroups = () => {
+    const all = Array.from(todoItems.querySelectorAll('.todo-item'));
+    const groups = [];
+    let cur = null;
+    all.forEach(t => {
+      if (getDepth(t) === 0 || cur === null) {
+        cur = [t];
+        groups.push(cur);
+      } else {
+        cur.push(t);
+      }
+    });
+    return groups;
   };
 
   /**
-   * Handles checkbox change with animation delay
+   * Collects a task and its descendants — all immediately following items
+   * with strictly greater depth than the starting task. Used both to drag a
+   * parent + its subtasks as one and to skip past a target's group on drop.
+   * @param {HTMLElement} task
+   * @returns {HTMLElement[]}
    */
-  const handleCheckboxChange = () => {
+  const collectGroup = (task) => {
+    const group = [task];
+    const baseDepth = getDepth(task);
+    let next = task.nextElementSibling;
+    while (next && next.classList.contains('todo-item') && getDepth(next) > baseDepth) {
+      group.push(next);
+      next = next.nextElementSibling;
+    }
+    return group;
+  };
+
+  /**
+   * Group-aware reorganize: groups whose parent (depth-0 task) is completed
+   * sink to the bottom; within each group the children are also partitioned
+   * with completed subtasks at the bottom of the parent's subtask list.
+   * Stable inside each partition so manual ordering survives.
+   */
+  const reorganizeTasks = () => {
+    const groups = buildGroups();
+    groups.forEach(group => {
+      if (group.length <= 1) return;
+      const [parent, ...children] = group;
+      const incomplete = [];
+      const completed = [];
+      children.forEach(c => {
+        (c.querySelector('.task-checkbox').checked ? completed : incomplete).push(c);
+      });
+      group.length = 0;
+      group.push(parent, ...incomplete, ...completed);
+    });
+    const incompleteGroups = [];
+    const completedGroups = [];
+    groups.forEach(g => {
+      (g[0].querySelector('.task-checkbox').checked ? completedGroups : incompleteGroups).push(g);
+    });
+    [...incompleteGroups, ...completedGroups].flat().forEach(t => todoItems.appendChild(t));
+  };
+
+  /**
+   * Subtask checkbox changes only persist — they don't move the row, so a
+   * checked subtask stays in place inside its parent's group. Only a depth-0
+   * (parent) toggle triggers the group-aware reorganize, which is when the
+   * group migrates to the bottom and its children also re-partition.
+   * @param {Event} e
+   */
+  const handleCheckboxChange = (e) => {
     saveTasks();
-    setTimeout(moveCompletedTasksToBottom, 150);
+    const task = e.target.closest('.todo-item');
+    if (task && getDepth(task) === 0) {
+      setTimeout(reorganizeTasks, 150);
+    }
   };
 
   /**
@@ -158,10 +216,23 @@ const TaskModule = (function() {
    * @param {number} [depth=0] - Indent level for visual subtask grouping
    * @returns {HTMLElement} Complete task element ready for insertion
    */
+  /** Notion-style 6-dot drag handle markup, kept in one place so the
+   *  template-rendered tasks and the static sample tasks stay in sync. */
+  const DRAG_HANDLE_HTML = `
+    <span class="task-drag-handle" aria-label="Drag to reorder">
+      <svg viewBox="0 0 8 14" fill="currentColor" aria-hidden="true">
+        <circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/>
+        <circle cx="2" cy="7" r="1"/><circle cx="6" cy="7" r="1"/>
+        <circle cx="2" cy="12" r="1"/><circle cx="6" cy="12" r="1"/>
+      </svg>
+    </span>
+  `;
+
   const createTaskElement = (taskId, taskText = 'New Task', depth = 0) => {
     const task = document.createElement('div');
     task.className = 'todo-item';
     task.innerHTML = `
+      ${DRAG_HANDLE_HTML}
       <input type="checkbox" id="${taskId}" class="task-checkbox">
       <span class="task-label">${taskText}</span>
       <div class="task-options-container">
@@ -242,6 +313,108 @@ const TaskModule = (function() {
     });
   };
 
+  /** Items currently being dragged (parent + its subtasks, or just one
+   *  subtask). Populated on dragstart, cleared on dragend. */
+  let draggedItems = [];
+
+  /**
+   * Wires the row's drag handle. The row only flips to draggable=true while
+   * the handle is pressed, so clicking elsewhere on the row (label, checkbox)
+   * still works normally and you can still text-select inside the label.
+   * On dragstart we collect the row's group so a parent and its subtasks
+   * travel together as one block.
+   * @param {HTMLElement} task
+   */
+  const setupDragForTask = (task) => {
+    const handle = task.querySelector('.task-drag-handle');
+    if (!handle) return;
+
+    const disableDrag = () => { task.draggable = false; };
+
+    handle.addEventListener('mousedown', () => {
+      task.draggable = true;
+      // Clear draggable on the next mouseup/dragend wherever it lands, so
+      // a click-without-drag (or any aborted drag) doesn't leave the row in
+      // a state where dragging from the label would also work.
+      const cleanup = () => {
+        disableDrag();
+        document.removeEventListener('mouseup', cleanup);
+        document.removeEventListener('dragend', cleanup);
+      };
+      document.addEventListener('mouseup', cleanup);
+      document.addEventListener('dragend', cleanup);
+    });
+
+    task.addEventListener('dragstart', (e) => {
+      draggedItems = collectGroup(task);
+      draggedItems.forEach(t => t.classList.add('dragging'));
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', ''); } catch (_) {}
+      }
+    });
+
+    task.addEventListener('dragend', () => {
+      draggedItems.forEach(t => t.classList.remove('dragging'));
+      todoItems.querySelectorAll('.drop-above, .drop-below').forEach(el => {
+        el.classList.remove('drop-above', 'drop-below');
+      });
+      disableDrag();
+      if (draggedItems.length) saveTasks();
+      draggedItems = [];
+    });
+  };
+
+  /**
+   * Container-level dragover/drop. Hint shows above/below the hovered row by
+   * comparing the cursor against the row midline. On drop we insert the
+   * dragged group either right before the target, or after the target's full
+   * group so we don't land mid-subtask-run inside someone else's parent.
+   */
+  const setupContainerDragHandlers = () => {
+    todoItems.addEventListener('dragover', (e) => {
+      if (!draggedItems.length) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      const target = e.target.closest('.todo-item');
+      todoItems.querySelectorAll('.drop-above, .drop-below').forEach(el => {
+        el.classList.remove('drop-above', 'drop-below');
+      });
+      if (!target || draggedItems.includes(target)) return;
+      const rect = target.getBoundingClientRect();
+      const above = e.clientY < rect.top + rect.height / 2;
+      target.classList.add(above ? 'drop-above' : 'drop-below');
+    });
+
+    todoItems.addEventListener('drop', (e) => {
+      if (!draggedItems.length) return;
+      e.preventDefault();
+      const target = e.target.closest('.todo-item');
+      // No row under cursor → user dropped in the slack area below the last
+      // task; append at the end so dragging to the bottom always works.
+      if (!target) {
+        draggedItems.forEach(item => todoItems.appendChild(item));
+        return;
+      }
+      if (draggedItems.includes(target)) return;
+      const rect = target.getBoundingClientRect();
+      const above = e.clientY < rect.top + rect.height / 2;
+
+      if (above) {
+        draggedItems.forEach(item => todoItems.insertBefore(item, target));
+      } else {
+        const targetGroup = collectGroup(target);
+        const lastOfTargetGroup = targetGroup[targetGroup.length - 1];
+        const after = lastOfTargetGroup.nextSibling;
+        if (after) {
+          draggedItems.forEach(item => todoItems.insertBefore(item, after));
+        } else {
+          draggedItems.forEach(item => todoItems.appendChild(item));
+        }
+      }
+    });
+  };
+
   /**
    * Adds event listeners to a task element.
    * Clicking the label enters edit mode; only direct checkbox clicks toggle
@@ -267,6 +440,7 @@ const TaskModule = (function() {
       task.remove();
       saveTasks();
     });
+    setupDragForTask(task);
   };
 
   /**
@@ -373,8 +547,21 @@ const TaskModule = (function() {
       addTaskEventListeners(task);
       todoItems.appendChild(task);
     });
-    moveCompletedTasksToBottom();
+    reorganizeTasks();
     return true;
+  };
+
+  /**
+   * The static sample tasks in index.html are written without a drag-handle
+   * span (so the markup stays trivially readable). On boot we inject one if
+   * it's missing — same DOM shape as createTaskElement output.
+   */
+  const ensureDragHandles = () => {
+    document.querySelectorAll('.todo-item').forEach(task => {
+      if (!task.querySelector('.task-drag-handle')) {
+        task.insertAdjacentHTML('afterbegin', DRAG_HANDLE_HTML);
+      }
+    });
   };
 
   return {
@@ -382,9 +569,11 @@ const TaskModule = (function() {
      * Initializes the task module
      */
     init() {
+      ensureDragHandles();
       if (!loadSavedTasks()) {
         initializeExistingTasks();
       }
+      setupContainerDragHandlers();
       addTaskBtn.addEventListener('click', addNewTask);
       document.addEventListener('click', closeAllDropdowns);
     }

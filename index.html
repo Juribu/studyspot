@@ -176,8 +176,18 @@
                     
                     <!-- Container for all todo items -->
                     <div class="todo-items">
-                        <!-- Sample task 1 (can be deleted) -->
+                        <!-- Sample task 1 (can be deleted).
+                             The .task-drag-handle span is also injected by
+                             tasks.js on boot for any todo-item that lacks
+                             one, so older saved markup keeps working. -->
                         <div class="todo-item" data-depth="0">
+                            <span class="task-drag-handle" aria-label="Drag to reorder">
+                                <svg viewBox="0 0 8 14" fill="currentColor" aria-hidden="true">
+                                    <circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/>
+                                    <circle cx="2" cy="7" r="1"/><circle cx="6" cy="7" r="1"/>
+                                    <circle cx="2" cy="12" r="1"/><circle cx="6" cy="12" r="1"/>
+                                </svg>
+                            </span>
                             <input type="checkbox" id="task1" class="task-checkbox">
                             <span class="task-label">Task</span>
                             <!-- Three dots menu for each task -->
@@ -192,6 +202,13 @@
 
                         <!-- Sample task 2 (can be deleted) -->
                         <div class="todo-item" data-depth="0">
+                            <span class="task-drag-handle" aria-label="Drag to reorder">
+                                <svg viewBox="0 0 8 14" fill="currentColor" aria-hidden="true">
+                                    <circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/>
+                                    <circle cx="2" cy="7" r="1"/><circle cx="6" cy="7" r="1"/>
+                                    <circle cx="2" cy="12" r="1"/><circle cx="6" cy="12" r="1"/>
+                                </svg>
+                            </span>
                             <input type="checkbox" id="task2" class="task-checkbox" checked>
                             <span class="task-label">Completed Task</span>
                             <div class="task-options-container">
