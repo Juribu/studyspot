@@ -62,6 +62,12 @@ const BackgroundModule = (function () {
       name: 'Starry Window',
       type: 'video',
       url: 'assets/mp4/windowStar.mp4'
+    },
+    {
+      id: 'forestMoving',
+      name: 'Starry Window',
+      type: 'video',
+      url: 'assets/mp4/forest.mp4'
     }
   ];
 
