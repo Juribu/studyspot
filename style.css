@@ -280,6 +280,8 @@ body::after {
   margin-right: 54px;
   margin-bottom: 24px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 60;
 }
 
 .left-section{
