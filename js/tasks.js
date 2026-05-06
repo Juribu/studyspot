@@ -151,12 +151,18 @@ const TaskModule = (function() {
    * Subtask checkbox changes only persist — they don't move the row, so a
    * checked subtask stays in place inside its parent's group. Only a depth-0
    * (parent) toggle triggers the group-aware reorganize, which is when the
-   * group migrates to the bottom and its children also re-partition.
+   * group migrates to the bottom and its children also re-partition. Checking
+   * a parent also cascades the checked state down to all its subtasks.
    * @param {Event} e
    */
   const handleCheckboxChange = (e) => {
-    saveTasks();
     const task = e.target.closest('.todo-item');
+    if (task && getDepth(task) === 0 && e.target.checked) {
+      collectGroup(task).slice(1).forEach(sub => {
+        sub.querySelector('.task-checkbox').checked = true;
+      });
+    }
+    saveTasks();
     if (task && getDepth(task) === 0) {
       setTimeout(reorganizeTasks, 150);
     }
