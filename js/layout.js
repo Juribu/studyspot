@@ -322,6 +322,39 @@ const LayoutModule = (function() {
     });
   };
 
+  // Smaller default cap (px) for the todo list when its natural height would
+  // cross the bottom toolbar on shorter viewports. Roughly the upper bound of
+  // the CSS `min-height` clamp so the block stays at the lower-bound size
+  // rather than the full max-height clamp(300, 35vh, 450).
+  const TODO_SHORT_MAX_PX = 280;
+
+  /**
+   * After clearing floating styles, the todo list takes its natural CSS
+   * height — on shorter viewports (or with many tasks) that can extend past
+   * the bottom toolbar. If the natural bottom edge crosses where the toolbar
+   * sits, apply an inline `max-height` cap so the block stays at the smaller
+   * default. Larger viewports with room keep the longer natural height.
+   */
+  const capTodoIfCrossesToolbar = () => {
+    const todoList = document.querySelector('.todo-list');
+    const toolbar = document.querySelector('.bottom-section');
+    if (!todoList || !toolbar) return;
+    // Drop any prior cap so we measure the natural CSS-driven size first.
+    todoList.style.maxHeight = '';
+    const todoBottom = todoList.getBoundingClientRect().bottom;
+    // Toolbar's effective top edge — its current top in flow, or where it
+    // would sit at the bottom of the viewport if content overflow has
+    // pushed it out of view.
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const effectiveToolbarTop = Math.min(
+      toolbarRect.top,
+      window.innerHeight - toolbar.offsetHeight - 24
+    );
+    if (todoBottom > effectiveToolbarTop) {
+      todoList.style.maxHeight = TODO_SHORT_MAX_PX + 'px';
+    }
+  };
+
   /**
    * Drop the floating state and inline geometry so blocks fall back into the
    * default flex layout. Saved positions are cleared so reloading also lands
@@ -356,9 +389,14 @@ const LayoutModule = (function() {
       if (handle) handle.remove();
     });
     localStorage.removeItem(STORAGE_KEY);
-    if (editMode) {
-      requestAnimationFrame(freezeBlocks);
-    }
+    // Apply the smaller-default cap if the natural todo-list height would
+    // cross the toolbar; freezeBlocks (when in edit mode) then captures the
+    // capped size as origH. Both run after a frame so the browser has
+    // reflowed the now-non-floating blocks back into normal layout.
+    requestAnimationFrame(() => {
+      capTodoIfCrossesToolbar();
+      if (editMode) freezeBlocks();
+    });
   };
 
   const addResizeHandle = (block) => {

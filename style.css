@@ -1101,55 +1101,21 @@ button:hover {
   opacity: 0.6;
 }
 
-.task-options {
+.todo-item .delete-btn {
   background-color: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.6);
   font-size: 20px;
-  font-weight: bold;
+  line-height: 1;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  line-height: 1;
-  position: relative;
 }
 
-.task-options:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-  transform: none;
-}
-
-.task-options-container {
-  position: relative;
-}
-
-/* Task dropdown uses .dropdown and .dropdown--small classes with position: fixed */
-.task-dropdown {
-  position: fixed; /* Only unique property - needs fixed positioning */
-}
-
-.task-dropdown button {
-  width: 100%;
-  padding: 8px 16px;
-  background-color: transparent;
-  border: none;
-  color: white;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 0;
-}
-
-.task-dropdown button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: none;
-}
-
-.task-dropdown .delete-btn:hover {
+.todo-item .delete-btn:hover {
   background-color: rgba(255, 0, 0, 0.2);
   color: #ff6b6b;
+  transform: none;
 }
 
 /* ==========================================================================

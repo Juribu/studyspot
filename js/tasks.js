@@ -169,51 +169,7 @@ const TaskModule = (function() {
   };
 
   /**
-   * Closes all open dropdown menus
-   */
-  const closeAllDropdowns = () => {
-    document.querySelectorAll('.task-dropdown').forEach(d => d.classList.remove('show'));
-  };
-
-  /**
-   * Positions dropdown to avoid viewport overflow
-   * @param {HTMLElement} dropdown - Dropdown element to position
-   */
-  const positionDropdown = (dropdown) => {
-    const optionsBtn = dropdown.closest('.todo-item').querySelector('.task-options');
-    if (!optionsBtn) return;
-    
-    const btnRect = optionsBtn.getBoundingClientRect();
-    const dropdownHeight = 80;
-    const dropdownWidth = 100;
-    
-    const spaceBelow = window.innerHeight - btnRect.bottom;
-    const top = spaceBelow >= dropdownHeight 
-      ? btnRect.bottom + 4 
-      : btnRect.top - dropdownHeight - 4;
-    
-    const left = Math.max(8, Math.min(btnRect.right - dropdownWidth, window.innerWidth - dropdownWidth - 8));
-    
-    Object.assign(dropdown.style, {
-      top: `${top}px`,
-      left: `${left}px`
-    });
-  };
-
-  /**
-   * Toggles dropdown visibility, closes others first
-   * @param {HTMLElement} dropdown - Dropdown to toggle
-   */
-  const toggleDropdown = (dropdown) => {
-    closeAllDropdowns();
-    if (!dropdown.classList.contains('show')) {
-      dropdown.classList.add('show');
-      positionDropdown(dropdown);
-    }
-  };
-
-  /**
-   * Creates a new task DOM element with checkbox, label, and options menu.
+   * Creates a new task DOM element with checkbox, label, and delete button.
    * The label is a span (not a <label for>) so clicking the row no longer
    * toggles completion — only direct checkbox clicks do, and label clicks
    * enter inline edit mode.
@@ -241,12 +197,7 @@ const TaskModule = (function() {
       ${DRAG_HANDLE_HTML}
       <input type="checkbox" id="${taskId}" class="task-checkbox">
       <span class="task-label">${taskText}</span>
-      <div class="task-options-container">
-        <button class="task-options">⋮</button>
-        <div class="dropdown dropdown--small task-dropdown">
-          <button class="delete-btn">Delete</button>
-        </div>
-      </div>
+      <button class="delete-btn" aria-label="Delete task">×</button>
     `;
     setDepth(task, depth);
     return task;
@@ -430,18 +381,12 @@ const TaskModule = (function() {
   const addTaskEventListeners = (task) => {
     const elements = {
       checkbox: task.querySelector('.task-checkbox'),
-      optionsBtn: task.querySelector('.task-options'),
-      dropdown: task.querySelector('.task-dropdown'),
       deleteBtn: task.querySelector('.delete-btn'),
       taskLabel: task.querySelector('.task-label')
     };
 
     elements.checkbox.addEventListener('change', handleCheckboxChange);
     elements.taskLabel.addEventListener('click', () => editTask(elements.taskLabel));
-    elements.optionsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleDropdown(elements.dropdown);
-    });
     elements.deleteBtn.addEventListener('click', () => {
       task.remove();
       saveTasks();
@@ -581,7 +526,6 @@ const TaskModule = (function() {
       }
       setupContainerDragHandlers();
       addTaskBtn.addEventListener('click', addNewTask);
-      document.addEventListener('click', closeAllDropdowns);
     }
   };
 })();
