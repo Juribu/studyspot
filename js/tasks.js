@@ -373,6 +373,83 @@ const TaskModule = (function() {
   };
 
   /**
+   * Shows a modal warning that deleting this task will also delete its
+   * subtasks. Resolves true if the user confirms, false if they cancel.
+   * Esc / overlay-click cancels; Enter confirms.
+   * @param {number} subtaskCount
+   * @returns {Promise<boolean>}
+   */
+  const confirmDeleteWithSubtasks = (subtaskCount) => new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'delete-confirm-overlay';
+    overlay.style.cssText = `
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000;
+      font-family: 'Inter', sans-serif;
+    `;
+
+    const plural = subtaskCount === 1 ? 'subtask' : 'subtasks';
+    overlay.innerHTML = `
+      <div class="delete-confirm-dialog" style="
+        background: rgba(30, 30, 30, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 360px;
+        color: white;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      ">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Delete task?</div>
+        <div style="font-size: 14px; opacity: 0.85; margin-bottom: 20px; line-height: 1.5;">
+          This task has ${subtaskCount} ${plural}. Deleting it will also delete all ${plural}.
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="confirm-cancel" style="
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+          ">Cancel</button>
+          <button class="confirm-delete" style="
+            background: rgba(220, 60, 60, 0.85);
+            border: 1px solid rgba(255, 100, 100, 0.4);
+            color: white;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+          ">Delete all</button>
+        </div>
+      </div>
+    `;
+
+    const close = (result) => {
+      document.removeEventListener('keydown', handleKey);
+      overlay.remove();
+      resolve(result);
+    };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') close(false);
+      else if (e.key === 'Enter') close(true);
+    };
+
+    overlay.querySelector('.confirm-cancel').addEventListener('click', () => close(false));
+    overlay.querySelector('.confirm-delete').addEventListener('click', () => close(true));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+    document.addEventListener('keydown', handleKey);
+
+    document.body.appendChild(overlay);
+    overlay.querySelector('.confirm-delete').focus();
+  });
+
+  /**
    * Adds event listeners to a task element.
    * Clicking the label enters edit mode; only direct checkbox clicks toggle
    * completion (the label is a <span>, not <label for>).
@@ -387,8 +464,16 @@ const TaskModule = (function() {
 
     elements.checkbox.addEventListener('change', handleCheckboxChange);
     elements.taskLabel.addEventListener('click', () => editTask(elements.taskLabel));
-    elements.deleteBtn.addEventListener('click', () => {
-      task.remove();
+    elements.deleteBtn.addEventListener('click', async () => {
+      const group = collectGroup(task);
+      const subtaskCount = group.length - 1;
+      if (subtaskCount > 0) {
+        const confirmed = await confirmDeleteWithSubtasks(subtaskCount);
+        if (!confirmed) return;
+        group.forEach(t => t.remove());
+      } else {
+        task.remove();
+      }
       saveTasks();
     });
     setupDragForTask(task);

@@ -642,6 +642,15 @@ const LayoutModule = (function() {
         if (slots[btn.dataset.preset]) btn.classList.add('has-saved');
       });
       restoreSavedPositions();
+      // Match the post-reset state: when blocks are in default flex flow,
+      // cap the todo-list if its natural height crosses the toolbar.
+      // Without this, initial page load and after-reset layouts diverge
+      // on shorter viewports — refresh leaves the todo at its full CSS
+      // max-height, pushing the bottom-section out of place.
+      const todoList = document.querySelector('.todo-list');
+      if (todoList && !todoList.classList.contains('floating')) {
+        requestAnimationFrame(capTodoIfCrossesToolbar);
+      }
     }
   };
 })();
