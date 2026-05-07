@@ -10,10 +10,10 @@ const BackgroundModule = (function () {
 
   const backgrounds = [
     {
-      id: 'street',
-      name: 'City Night',
+      id: 'forest',
+      name: 'Misty Forest',
       type: 'image',
-      url: 'assets/images/street.jpg'
+      url: 'assets/images/forrest.jpg'
     },
     {
       id: 'rain',
@@ -22,16 +22,16 @@ const BackgroundModule = (function () {
       url: 'assets/images/rain.jpg'
     },
     {
+      id: 'street',
+      name: 'City Night',
+      type: 'image',
+      url: 'assets/images/street.jpg'
+    },
+    {
       id: 'cafe',
       name: 'Cozy Cafe',
       type: 'image',
       url: 'assets/images/coffee.jpg'
-    },
-    {
-      id: 'forest',
-      name: 'Misty Forest',
-      type: 'image',
-      url: 'assets/images/forrest.jpg'
     },
     {
       id: 'library',
