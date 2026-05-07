@@ -121,38 +121,58 @@ const TaskModule = (function() {
   };
 
   /**
-   * Group-aware reorganize: groups whose parent (depth-0 task) is completed
-   * sink to the bottom; within each group the children are also partitioned
-   * with completed subtasks at the bottom of the parent's subtask list.
-   * Stable inside each partition so manual ordering survives.
+   * Recursively sorts a subtree (root followed by all its descendants in DOM
+   * order) so that at every nesting level, completed siblings sink below
+   * incomplete siblings under the same parent. The root itself is not
+   * partitioned — its position relative to its own peers is decided one
+   * level up. Stable inside each partition so manual ordering survives.
+   * @param {HTMLElement[]} items
+   * @returns {HTMLElement[]}
+   */
+  const sortSubtree = (items) => {
+    if (items.length <= 1) return items;
+    const [root, ...rest] = items;
+    const childDepth = getDepth(root) + 1;
+    const subgroups = [];
+    let cur = null;
+    rest.forEach(t => {
+      if (getDepth(t) === childDepth || cur === null) {
+        cur = [t];
+        subgroups.push(cur);
+      } else {
+        cur.push(t);
+      }
+    });
+    const sortedSubs = subgroups.map(sortSubtree);
+    const incomplete = [];
+    const completed = [];
+    sortedSubs.forEach(sg => {
+      (sg[0].querySelector('.task-checkbox').checked ? completed : incomplete).push(sg);
+    });
+    return [root, ...incomplete.flat(), ...completed.flat()];
+  };
+
+  /**
+   * Group-aware reorganize: top-level groups whose parent (depth-0 task) is
+   * completed sink to the bottom; within each group, sortSubtree recursively
+   * partitions descendants so a completed subtask lands at the bottom of its
+   * same-level siblings under the same parent.
    */
   const reorganizeTasks = () => {
-    const groups = buildGroups();
-    groups.forEach(group => {
-      if (group.length <= 1) return;
-      const [parent, ...children] = group;
-      const incomplete = [];
-      const completed = [];
-      children.forEach(c => {
-        (c.querySelector('.task-checkbox').checked ? completed : incomplete).push(c);
-      });
-      group.length = 0;
-      group.push(parent, ...incomplete, ...completed);
-    });
+    const sorted = buildGroups().map(sortSubtree);
     const incompleteGroups = [];
     const completedGroups = [];
-    groups.forEach(g => {
+    sorted.forEach(g => {
       (g[0].querySelector('.task-checkbox').checked ? completedGroups : incompleteGroups).push(g);
     });
     [...incompleteGroups, ...completedGroups].flat().forEach(t => todoItems.appendChild(t));
   };
 
   /**
-   * Subtask checkbox changes only persist — they don't move the row, so a
-   * checked subtask stays in place inside its parent's group. Only a depth-0
-   * (parent) toggle triggers the group-aware reorganize, which is when the
-   * group migrates to the bottom and its children also re-partition. Checking
-   * a parent also cascades the checked state down to all its subtasks.
+   * Any checkbox toggle re-runs the group-aware reorganize: a completed
+   * subtask sinks to the bottom of its same-level siblings under the same
+   * parent, and a completed depth-0 task sinks its whole group to the bottom.
+   * Checking a parent also cascades the checked state down to all subtasks.
    * @param {Event} e
    */
   const handleCheckboxChange = (e) => {
@@ -163,9 +183,7 @@ const TaskModule = (function() {
       });
     }
     saveTasks();
-    if (task && getDepth(task) === 0) {
-      setTimeout(reorganizeTasks, 150);
-    }
+    setTimeout(reorganizeTasks, 150);
   };
 
   /**
