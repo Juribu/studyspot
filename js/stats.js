@@ -592,6 +592,22 @@ const StudyStatsModule = (function() {
               </svg>
               Import
             </button>
+            <div class="stats-data-help">
+              <button class="stats-help-btn" type="button" aria-label="Why export and import?" aria-expanded="false">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </button>
+              <div class="stats-help-popover" hidden>
+                <p>Your stats live only in this browser.</p>
+                <p>Clearing site data, switching browsers, or using a different device will wipe them.</p>
+                <p><strong>Export</strong> saves a backup file you can keep anywhere.</p>
+                <p><strong>Import</strong> restores from that file — duplicates are skipped.</p>
+                <p>Tip: export before clearing browser data or moving devices.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>`;
@@ -621,6 +637,28 @@ const StudyStatsModule = (function() {
     // Export / Import
     modal.querySelector('.stats-export-btn').addEventListener('click', exportData);
     modal.querySelector('.stats-import-btn').addEventListener('click', () => importData(modal));
+
+    // Help popover
+    const helpWrap = modal.querySelector('.stats-data-help');
+    const helpBtn = helpWrap.querySelector('.stats-help-btn');
+    const helpPop = helpWrap.querySelector('.stats-help-popover');
+    helpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = !helpPop.hasAttribute('hidden');
+      if (open) {
+        helpPop.setAttribute('hidden', '');
+        helpBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        helpPop.removeAttribute('hidden');
+        helpBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!helpWrap.contains(e.target) && !helpPop.hasAttribute('hidden')) {
+        helpPop.setAttribute('hidden', '');
+        helpBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
 
     // Close handlers
     const closeModal = () => {

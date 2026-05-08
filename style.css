@@ -1837,6 +1837,68 @@ button:hover {
   transform: none;
 }
 
+.stats-data-help {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.stats-help-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.stats-help-btn:hover,
+.stats-help-btn[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.stats-help-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  padding: 12px 14px;
+  background: rgba(28, 28, 32, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  line-height: 1.5;
+  z-index: 10;
+}
+
+.stats-help-popover[hidden] {
+  display: none;
+}
+
+.stats-help-popover p {
+  margin: 0 0 6px 0;
+}
+
+.stats-help-popover p:last-child {
+  margin-bottom: 0;
+}
+
+.stats-help-popover strong {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
 /* ==========================================================================
    EDITABLE LAYOUT (MOVE & RESIZE UTILITY BLOCKS)
    ========================================================================== */
