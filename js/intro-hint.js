@@ -67,7 +67,7 @@ const IntroHintModule = (function() {
         <div class="intro-hint__title">Full screen for best experience</div>
         <div class="intro-hint__sub">Click the icon, or press <kbd>${shortcut}</kbd></div>
         <div class="intro-hint__footer">
-          <span class="intro-hint__counter">1/4</span>
+          <span class="intro-hint__counter">1/5</span>
           <div class="intro-hint__nav">
             <button class="intro-hint__btn intro-hint__btn--left" type="button" aria-label="Back" disabled>&larr;</button>
             <button class="intro-hint__btn intro-hint__btn--right" type="button" aria-label="Next">&rarr;</button>

@@ -43,7 +43,7 @@ const BgHintModule = (function() {
         <div class="bg-hint__title">You can change the background</div>
         <div class="bg-hint__sub">Click the icon to pick an image or video scene</div>
         <div class="bg-hint__footer">
-          <span class="bg-hint__counter">2/4</span>
+          <span class="bg-hint__counter">2/5</span>
           <div class="bg-hint__nav">
             <button class="bg-hint__btn bg-hint__btn--left" type="button" aria-label="Back">&larr;</button>
             <button class="bg-hint__btn bg-hint__btn--right" type="button" aria-label="Next">&rarr;</button>

@@ -1,24 +1,29 @@
 /**
  * Stats Hint Module
- * Shows a one-time fading bubble pointing to the stats button after the
- * user's first pomodoro session has been recorded. Persisted via STORAGE_KEY
- * so it only ever appears once per browser.
+ * Shows a bubble pointing to the stats button in two modes:
+ *   - standalone (maybeShow, called by timer.js after the first pomodoro):
+ *     a single OK button, no transition to any other hint.
+ *   - chain (show({force}), called by LayoutHintModule/SpotifyHintModule):
+ *     step 4/5 of the onboarding tour with prev/next nav buttons that
+ *     navigate back to layout-hint or forward to spotify-hint.
+ * Persisted via STORAGE_KEY so the standalone version only ever appears once.
  * @module StatsHintModule
  */
 const StatsHintModule = (function() {
-  const STORAGE_KEY = 'studyspot_stats_hint_seen';
+  const STANDALONE_KEY = 'studyspot_stats_hint_seen';
+  const CHAIN_KEY = 'studyspot_stats_hint_chain_seen';
 
   const elements = {
     statsBtn: document.getElementById('stats-btn')
   };
 
-  const hasSeen = () => {
-    try { return localStorage.getItem(STORAGE_KEY) === '1'; }
+  const hasSeen = (key) => {
+    try { return localStorage.getItem(key) === '1'; }
     catch (_e) { return false; }
   };
 
-  const markSeen = () => {
-    try { localStorage.setItem(STORAGE_KEY, '1'); } catch (_e) {}
+  const markSeen = (key) => {
+    try { localStorage.setItem(key, '1'); } catch (_e) {}
   };
 
   /**
@@ -35,18 +40,31 @@ const StatsHintModule = (function() {
     overlay.style.bottom = bottomOffset + 'px';
   };
 
-  const showHint = () => {
+  const showHint = (mode) => {
     const btn = elements.statsBtn;
     if (!btn) return;
 
     const overlay = document.createElement('div');
     overlay.id = 'stats-hint';
     overlay.setAttribute('aria-hidden', 'true');
+
+    const footerHtml = mode === 'chain'
+      ? `
+        <div class="stats-hint__footer">
+          <span class="stats-hint__counter">4/5</span>
+          <div class="stats-hint__nav">
+            <button class="stats-hint__btn stats-hint__btn--left" type="button" aria-label="Back">&larr;</button>
+            <button class="stats-hint__btn stats-hint__btn--right" type="button" aria-label="Next">&rarr;</button>
+          </div>
+        </div>
+      `
+      : `<button class="stats-hint__ok" type="button">OK</button>`;
+
     overlay.innerHTML = `
       <div class="stats-hint__bubble">
         <div class="stats-hint__title">Your study sessions are logged here</div>
         <div class="stats-hint__sub">Click the chart icon any time to see your stats</div>
-        <button class="stats-hint__ok" type="button">OK</button>
+        ${footerHtml}
       </div>
       <svg class="stats-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
         <path d="M 8 6 C 8 50, 76 28, 76 72"
@@ -84,22 +102,6 @@ const StatsHintModule = (function() {
       pointer-events: auto;
     `;
 
-    const okBtn = overlay.querySelector('.stats-hint__ok');
-    okBtn.style.cssText = `
-      display: block;
-      margin-top: 10px;
-      margin-left: auto;
-      background: rgba(255, 255, 255, 0.16);
-      color: rgba(255, 255, 255, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 8px;
-      padding: 4px 14px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-      pointer-events: auto;
-    `;
-
     const title = overlay.querySelector('.stats-hint__title');
     title.style.cssText = `
       font-size: 14px;
@@ -113,6 +115,52 @@ const StatsHintModule = (function() {
       font-size: 12px;
       opacity: 0.78;
     `;
+
+    if (mode === 'chain') {
+      const footer = overlay.querySelector('.stats-hint__footer');
+      footer.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        gap: 10px;
+      `;
+      const counter = overlay.querySelector('.stats-hint__counter');
+      counter.style.cssText = `
+        font-size: 11px;
+        opacity: 0.6;
+      `;
+      overlay.querySelectorAll('.stats-hint__btn').forEach((b) => {
+        b.style.cssText = `
+          background: rgba(255, 255, 255, 0.16);
+          color: rgba(255, 255, 255, 0.96);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          border-radius: 8px;
+          padding: 4px 12px;
+          font: inherit;
+          font-size: 12px;
+          cursor: pointer;
+          pointer-events: auto;
+          margin-left: 6px;
+        `;
+      });
+    } else {
+      const okBtn = overlay.querySelector('.stats-hint__ok');
+      okBtn.style.cssText = `
+        display: block;
+        margin-top: 10px;
+        margin-left: auto;
+        background: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 8px;
+        padding: 4px 14px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        pointer-events: auto;
+      `;
+    }
 
     const arrow = overlay.querySelector('.stats-hint__arrow');
     arrow.style.cssText = `
@@ -133,39 +181,67 @@ const StatsHintModule = (function() {
     });
 
     const FADE_MS = 200;
-    okBtn.addEventListener('click', () => {
+    const fadeAnd = (next) => {
       overlay.style.transition = `opacity ${FADE_MS}ms ease`;
       overlay.style.opacity = '0';
       setTimeout(() => {
         overlay.remove();
-        if (typeof SpotifyHintModule !== 'undefined') {
-          SpotifyHintModule.show();
-        }
+        next && next();
       }, FADE_MS);
-    });
+    };
+
+    if (mode === 'chain') {
+      const leftBtn = overlay.querySelector('.stats-hint__btn--left');
+      const rightBtn = overlay.querySelector('.stats-hint__btn--right');
+      leftBtn.addEventListener('click', () => fadeAnd(() => {
+        if (typeof LayoutHintModule !== 'undefined') LayoutHintModule.show({ force: true });
+      }));
+      rightBtn.addEventListener('click', () => fadeAnd(() => {
+        if (typeof SpotifyHintModule !== 'undefined') SpotifyHintModule.show({ force: true });
+      }));
+    } else {
+      const okBtn = overlay.querySelector('.stats-hint__ok');
+      okBtn.addEventListener('click', () => fadeAnd(null));
+    }
   };
 
   /**
-   * Try to surface the hint. No-op if already seen or button missing.
-   * Safe to call multiple times — only shows once per browser.
+   * Standalone post-pomodoro trigger. Single OK, no transition.
+   * No-op if already seen or button missing.
    */
   const maybeShow = (delayMs = 100) => {
-    if (hasSeen()) return;
+    if (hasSeen(STANDALONE_KEY)) return;
     if (!elements.statsBtn) return;
     setTimeout(() => {
-      if (hasSeen()) return;
-      showHint();
-      markSeen();
+      if (hasSeen(STANDALONE_KEY)) return;
+      showHint('standalone');
+      markSeen(STANDALONE_KEY);
+    }, delayMs);
+  };
+
+  /**
+   * Onboarding-chain trigger. Renders prev/next nav so the user can
+   * walk back to layout-hint or forward to spotify-hint.
+   */
+  const show = (opts = {}) => {
+    const { force = false, delayMs = 100 } = typeof opts === 'number' ? { delayMs: opts } : opts;
+    if (!force && hasSeen(CHAIN_KEY)) return;
+    if (!elements.statsBtn) return;
+    setTimeout(() => {
+      if (!force && hasSeen(CHAIN_KEY)) return;
+      showHint('chain');
+      markSeen(CHAIN_KEY);
     }, delayMs);
   };
 
   return {
     /**
      * No boot-time auto-show. The hint is only surfaced when TimerModule
-     * calls maybeShow() after the user closes the "Time's Up" popup
-     * following a completed pomodoro.
+     * calls maybeShow() after a completed pomodoro, or when the onboarding
+     * chain navigates here via show({ force: true }).
      */
     init() {},
-    maybeShow
+    maybeShow,
+    show
   };
 })();

@@ -44,7 +44,7 @@ const SpotifyHintModule = (function() {
         <div class="spotify-hint__title">Switch to Spotify any time</div>
         <div class="spotify-hint__sub">Paste a playlist link to play your own music</div>
         <div class="spotify-hint__footer">
-          <span class="spotify-hint__counter">4/4</span>
+          <span class="spotify-hint__counter">5/5</span>
           <div class="spotify-hint__nav">
             <button class="spotify-hint__btn spotify-hint__btn--left" type="button" aria-label="Back">&larr;</button>
             <button class="spotify-hint__btn spotify-hint__btn--right" type="button">OK</button>
@@ -162,7 +162,7 @@ const SpotifyHintModule = (function() {
       }, FADE_MS);
     };
     leftBtn.addEventListener('click', () => fadeAnd(() => {
-      if (typeof LayoutHintModule !== 'undefined') LayoutHintModule.show({ force: true });
+      if (typeof StatsHintModule !== 'undefined') StatsHintModule.show({ force: true });
     }));
     rightBtn.addEventListener('click', () => fadeAnd(null));
   };

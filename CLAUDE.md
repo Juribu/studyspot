@@ -36,11 +36,11 @@ All styles live in a single `style.css`. It is large (~2,200 lines) and section-
 │   ├── background.js           # Image + video background picker
 │   ├── quotes.js               # Hourly-deterministic quote rotation
 │   ├── layout.js               # Edit mode: drag and resize the 3 main blocks
-│   ├── intro-hint.js           # First-visit fading bubble pointing to the fullscreen button (step 1/4 of the onboarding chain)
-│   ├── stats-hint.js           # One-time bubble pointing to the stats button, triggered only by timer popup after first pomodoro; standalone OK button (NOT part of the numbered onboarding chain)
-│   ├── bg-hint.js              # Step 2/4. Chained after intro-hint
-│   ├── layout-hint.js          # Step 3/4. Chained after bg-hint; chains directly to spotify-hint (skips stats-hint)
-│   └── spotify-hint.js         # Step 4/4. Final step; right button reads "OK"
+│   ├── intro-hint.js           # First-visit fading bubble pointing to the fullscreen button (step 1/5 of the onboarding chain)
+│   ├── stats-hint.js           # Bubble pointing to the stats button. TWO UIs: standalone OK (triggered by timer popup after first pomodoro, no transition) OR step 4/5 of the onboarding chain with prev/next nav
+│   ├── bg-hint.js              # Step 2/5. Chained after intro-hint
+│   ├── layout-hint.js          # Step 3/5. Chained after bg-hint; chains forward to stats-hint
+│   └── spotify-hint.js         # Step 5/5. Final step; right button reads "OK"
 ├── assets/
 │   ├── icons/                  # SVG icons used by buttons (timer_settings, play, prev, next, mood, sound, background, stats, fullscreen, etc.)
 │   ├── images/                 # Background images (street, rain, coffee, forrest, library) + lofi.png thumbnail
@@ -66,7 +66,7 @@ const SomeModule = (function() {
 Don't deviate from this — `js/main.js` calls `.init()` on each module by global name and silently skips any that aren't defined.
 
 **localStorage keys** are namespaced with the `studyspot_` prefix:
-- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`, `studyspot_layout`, `studyspot_intro_hint_seen`, `studyspot_stats_hint_seen`, `studyspot_bg_hint_seen`, `studyspot_layout_hint_seen`, `studyspot_spotify_hint_seen`
+- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`, `studyspot_layout`, `studyspot_intro_hint_seen`, `studyspot_stats_hint_seen`, `studyspot_stats_hint_chain_seen`, `studyspot_bg_hint_seen`, `studyspot_layout_hint_seen`, `studyspot_spotify_hint_seen`
 - One legacy key (`studyspot.background` with a dot) is migrated on read in `js/background.js` — pattern to follow if you ever rename a key.
 
 **Reads from `localStorage` are wrapped in try/catch** and fall back to defaults. Writes are not (they should rarely throw). Match this.
@@ -105,7 +105,7 @@ After any update, echo back the exact diff (added/removed/changed lines) in the 
 - **No build, no node, no package manager.** Don't suggest npm/yarn installs, don't add bundling, don't reach for TypeScript or React. The "no setup" property is a feature.
 - **`js/main.js` is the source of truth for module load order.** If you add a new `<script>` to `index.html`, also add it to `main.js`'s `modules` array so it gets `init()`-ed.
 - **Modules talk via globals, not imports.** Use `typeof OtherModule !== 'undefined' && OtherModule.method(...)` when one module calls another, mirroring the existing pattern in `timer.js → StudyStatsModule`.
-- **Onboarding hint chain is intro → bg → layout → spotify (4 steps).** Each step shows an "N/4" counter and left/right arrow nav; left navigates back, right navigates forward, and step 4's right button reads "OK". Each hint's `show()` accepts `{ force: true }` so going back can re-display a hint that's already marked seen. **Stats-hint is intentionally outside this chain** — it's only triggered by `timer.js` after the first completed pomodoro and keeps a single OK button.
+- **Onboarding hint chain is intro → bg → layout → stats → spotify (5 steps).** Each step shows an "N/5" counter and left/right arrow nav; left navigates back, right navigates forward, and step 5's right button reads "OK". Each hint's `show()` accepts `{ force: true }` so going back can re-display a hint that's already marked seen. **Stats-hint has two UIs**: when invoked via `show({ force: true })` from the chain it renders the standard prev/next nav; when invoked via `maybeShow()` from `timer.js` after the first completed pomodoro it renders only an OK button with no transition. The two UIs use independent flags (`studyspot_stats_hint_seen` for standalone, `studyspot_stats_hint_chain_seen` for chain) so each fires once on its own schedule — walking the onboarding chain does not suppress the post-pomodoro hint.
 - **Spotify embed has fixed render heights** (~152px compact, ~352px+ large). Stretching to anything in between leaves a dark blank band inside the iframe — `style.css` shrinks the picker column in Spotify mode (via `:has()`) so the music-section doesn't grow past the embed's natural height. Don't undo this without thinking.
 - **Spotify Premium required for full-track playback**; free accounts get 30-second previews. Login happens entirely inside Spotify's iframe — StudySpot never touches credentials.
 - **SoundCloud Widget API is loaded by URL at runtime.** `js/music.js` injects the `<script>` and instantiates `SC.Widget(iframe)` after `READY`. If `SC` is undefined, the script tag failed to load (network/blocker).

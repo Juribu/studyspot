@@ -44,7 +44,7 @@ const LayoutHintModule = (function() {
         <div class="layout-hint__title">Customize your layout</div>
         <div class="layout-hint__sub">Drag and resize blocks, then save up to 3 presets</div>
         <div class="layout-hint__footer">
-          <span class="layout-hint__counter">3/4</span>
+          <span class="layout-hint__counter">3/5</span>
           <div class="layout-hint__nav">
             <button class="layout-hint__btn layout-hint__btn--left" type="button" aria-label="Back">&larr;</button>
             <button class="layout-hint__btn layout-hint__btn--right" type="button" aria-label="Next">&rarr;</button>
@@ -165,7 +165,7 @@ const LayoutHintModule = (function() {
       if (typeof BgHintModule !== 'undefined') BgHintModule.show({ force: true });
     }));
     rightBtn.addEventListener('click', () => fadeAnd(() => {
-      if (typeof SpotifyHintModule !== 'undefined') SpotifyHintModule.show({ force: true });
+      if (typeof StatsHintModule !== 'undefined') StatsHintModule.show({ force: true });
     }));
   };
 
