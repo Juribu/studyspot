@@ -66,7 +66,13 @@ const IntroHintModule = (function() {
       <div class="intro-hint__bubble">
         <div class="intro-hint__title">Full screen for best experience</div>
         <div class="intro-hint__sub">Click the icon, or press <kbd>${shortcut}</kbd></div>
-        <button class="intro-hint__ok" type="button">OK</button>
+        <div class="intro-hint__footer">
+          <span class="intro-hint__counter">1/4</span>
+          <div class="intro-hint__nav">
+            <button class="intro-hint__btn intro-hint__btn--left" type="button" aria-label="Back" disabled>&larr;</button>
+            <button class="intro-hint__btn intro-hint__btn--right" type="button" aria-label="Next">&rarr;</button>
+          </div>
+        </div>
       </div>
       <svg class="intro-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
         <path d="M 8 6 C 8 50, 76 28, 76 72"
@@ -104,21 +110,41 @@ const IntroHintModule = (function() {
       pointer-events: auto;
     `;
 
-    const okBtn = overlay.querySelector('.intro-hint__ok');
-    okBtn.style.cssText = `
-      display: block;
+    const footer = overlay.querySelector('.intro-hint__footer');
+    footer.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-top: 10px;
-      margin-left: auto;
-      background: rgba(255, 255, 255, 0.16);
-      color: rgba(255, 255, 255, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 8px;
-      padding: 4px 14px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-      pointer-events: auto;
+      gap: 10px;
     `;
+
+    const counter = overlay.querySelector('.intro-hint__counter');
+    counter.style.cssText = `
+      font-size: 11px;
+      opacity: 0.6;
+    `;
+
+    overlay.querySelectorAll('.intro-hint__btn').forEach((b) => {
+      b.style.cssText = `
+        background: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 8px;
+        padding: 4px 12px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        pointer-events: auto;
+        margin-left: 6px;
+      `;
+      if (b.disabled) {
+        b.style.opacity = '0.35';
+        b.style.cursor = 'default';
+      }
+    });
+
+    const rightBtn = overlay.querySelector('.intro-hint__btn--right');
 
     const title = overlay.querySelector('.intro-hint__title');
     title.style.cssText = `
@@ -166,16 +192,23 @@ const IntroHintModule = (function() {
     });
 
     const FADE_MS = 200;
-    okBtn.addEventListener('click', () => {
+    rightBtn.addEventListener('click', () => {
       overlay.style.transition = `opacity ${FADE_MS}ms ease`;
       overlay.style.opacity = '0';
       setTimeout(() => {
         overlay.remove();
         if (typeof BgHintModule !== 'undefined') {
-          BgHintModule.show();
+          BgHintModule.show({ force: true });
         }
       }, FADE_MS);
     });
+  };
+
+  const show = ({ force = false } = {}) => {
+    if (!force && hasSeen()) return;
+    if (!elements.fullscreenBtn) return;
+    showHint();
+    markSeen();
   };
 
   return {
@@ -190,7 +223,8 @@ const IntroHintModule = (function() {
       setTimeout(() => {
         showHint();
         markSeen();
-      }, 700);
-    }
+      }, 3000);
+    },
+    show
   };
 })();

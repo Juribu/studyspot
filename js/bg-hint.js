@@ -42,7 +42,13 @@ const BgHintModule = (function() {
       <div class="bg-hint__bubble">
         <div class="bg-hint__title">You can change the background</div>
         <div class="bg-hint__sub">Click the icon to pick an image or video scene</div>
-        <button class="bg-hint__ok" type="button">OK</button>
+        <div class="bg-hint__footer">
+          <span class="bg-hint__counter">2/4</span>
+          <div class="bg-hint__nav">
+            <button class="bg-hint__btn bg-hint__btn--left" type="button" aria-label="Back">&larr;</button>
+            <button class="bg-hint__btn bg-hint__btn--right" type="button" aria-label="Next">&rarr;</button>
+          </div>
+        </div>
       </div>
       <svg class="bg-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
         <path d="M 8 6 C 8 50, 76 28, 76 72"
@@ -80,21 +86,38 @@ const BgHintModule = (function() {
       pointer-events: auto;
     `;
 
-    const okBtn = overlay.querySelector('.bg-hint__ok');
-    okBtn.style.cssText = `
-      display: block;
+    const footer = overlay.querySelector('.bg-hint__footer');
+    footer.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-top: 10px;
-      margin-left: auto;
-      background: rgba(255, 255, 255, 0.16);
-      color: rgba(255, 255, 255, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 8px;
-      padding: 4px 14px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-      pointer-events: auto;
+      gap: 10px;
     `;
+
+    const counter = overlay.querySelector('.bg-hint__counter');
+    counter.style.cssText = `
+      font-size: 11px;
+      opacity: 0.6;
+    `;
+
+    overlay.querySelectorAll('.bg-hint__btn').forEach((b) => {
+      b.style.cssText = `
+        background: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 8px;
+        padding: 4px 12px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        pointer-events: auto;
+        margin-left: 6px;
+      `;
+    });
+
+    const leftBtn = overlay.querySelector('.bg-hint__btn--left');
+    const rightBtn = overlay.querySelector('.bg-hint__btn--right');
 
     const title = overlay.querySelector('.bg-hint__title');
     title.style.cssText = `
@@ -131,27 +154,32 @@ const BgHintModule = (function() {
     });
 
     const FADE_MS = 200;
-    okBtn.addEventListener('click', () => {
+    const fadeAnd = (next) => {
       overlay.style.transition = `opacity ${FADE_MS}ms ease`;
       overlay.style.opacity = '0';
       setTimeout(() => {
         overlay.remove();
-        if (typeof LayoutHintModule !== 'undefined') {
-          LayoutHintModule.show();
-        }
+        next && next();
       }, FADE_MS);
-    });
+    };
+    leftBtn.addEventListener('click', () => fadeAnd(() => {
+      if (typeof IntroHintModule !== 'undefined') IntroHintModule.show({ force: true });
+    }));
+    rightBtn.addEventListener('click', () => fadeAnd(() => {
+      if (typeof LayoutHintModule !== 'undefined') LayoutHintModule.show({ force: true });
+    }));
   };
 
   /**
-   * Surface the hint once. No-op if already seen or button missing.
-   * Called by IntroHintModule after the user OKs the fullscreen hint.
+   * Surface the hint once. No-op if already seen (unless forced) or button missing.
+   * Called by IntroHintModule after the user navigates forward.
    */
-  const show = (delayMs = 100) => {
-    if (hasSeen()) return;
+  const show = (opts = {}) => {
+    const { force = false, delayMs = 100 } = typeof opts === 'number' ? { delayMs: opts } : opts;
+    if (!force && hasSeen()) return;
     if (!elements.bgBtn) return;
     setTimeout(() => {
-      if (hasSeen()) return;
+      if (!force && hasSeen()) return;
       showHint();
       markSeen();
     }, delayMs);

@@ -43,7 +43,13 @@ const LayoutHintModule = (function() {
       <div class="layout-hint__bubble">
         <div class="layout-hint__title">Customize your layout</div>
         <div class="layout-hint__sub">Drag and resize blocks, then save up to 3 presets</div>
-        <button class="layout-hint__ok" type="button">OK</button>
+        <div class="layout-hint__footer">
+          <span class="layout-hint__counter">3/4</span>
+          <div class="layout-hint__nav">
+            <button class="layout-hint__btn layout-hint__btn--left" type="button" aria-label="Back">&larr;</button>
+            <button class="layout-hint__btn layout-hint__btn--right" type="button" aria-label="Next">&rarr;</button>
+          </div>
+        </div>
       </div>
       <svg class="layout-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
         <path d="M 8 6 C 8 50, 76 28, 76 72"
@@ -95,21 +101,38 @@ const LayoutHintModule = (function() {
       opacity: 0.78;
     `;
 
-    const okBtn = overlay.querySelector('.layout-hint__ok');
-    okBtn.style.cssText = `
-      display: block;
+    const footer = overlay.querySelector('.layout-hint__footer');
+    footer.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-top: 10px;
-      margin-left: auto;
-      background: rgba(255, 255, 255, 0.16);
-      color: rgba(255, 255, 255, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 8px;
-      padding: 4px 14px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-      pointer-events: auto;
+      gap: 10px;
     `;
+
+    const counter = overlay.querySelector('.layout-hint__counter');
+    counter.style.cssText = `
+      font-size: 11px;
+      opacity: 0.6;
+    `;
+
+    overlay.querySelectorAll('.layout-hint__btn').forEach((b) => {
+      b.style.cssText = `
+        background: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 8px;
+        padding: 4px 12px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        pointer-events: auto;
+        margin-left: 6px;
+      `;
+    });
+
+    const leftBtn = overlay.querySelector('.layout-hint__btn--left');
+    const rightBtn = overlay.querySelector('.layout-hint__btn--right');
 
     const arrow = overlay.querySelector('.layout-hint__arrow');
     arrow.style.cssText = `
@@ -130,26 +153,31 @@ const LayoutHintModule = (function() {
     });
 
     const FADE_MS = 200;
-    okBtn.addEventListener('click', () => {
+    const fadeAnd = (next) => {
       overlay.style.transition = `opacity ${FADE_MS}ms ease`;
       overlay.style.opacity = '0';
       setTimeout(() => {
         overlay.remove();
-        if (typeof StatsHintModule !== 'undefined') {
-          StatsHintModule.maybeShow();
-        }
+        next && next();
       }, FADE_MS);
-    });
+    };
+    leftBtn.addEventListener('click', () => fadeAnd(() => {
+      if (typeof BgHintModule !== 'undefined') BgHintModule.show({ force: true });
+    }));
+    rightBtn.addEventListener('click', () => fadeAnd(() => {
+      if (typeof SpotifyHintModule !== 'undefined') SpotifyHintModule.show({ force: true });
+    }));
   };
 
   /**
-   * Surface the hint once. No-op if already seen or button missing.
+   * Surface the hint once. No-op if already seen (unless forced) or button missing.
    */
-  const show = (delayMs = 100) => {
-    if (hasSeen()) return;
+  const show = (opts = {}) => {
+    const { force = false, delayMs = 100 } = typeof opts === 'number' ? { delayMs: opts } : opts;
+    if (!force && hasSeen()) return;
     if (!elements.layoutBtn) return;
     setTimeout(() => {
-      if (hasSeen()) return;
+      if (!force && hasSeen()) return;
       showHint();
       markSeen();
     }, delayMs);

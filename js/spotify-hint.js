@@ -43,7 +43,13 @@ const SpotifyHintModule = (function() {
       <div class="spotify-hint__bubble">
         <div class="spotify-hint__title">Switch to Spotify any time</div>
         <div class="spotify-hint__sub">Paste a playlist link to play your own music</div>
-        <button class="spotify-hint__ok" type="button">OK</button>
+        <div class="spotify-hint__footer">
+          <span class="spotify-hint__counter">4/4</span>
+          <div class="spotify-hint__nav">
+            <button class="spotify-hint__btn spotify-hint__btn--left" type="button" aria-label="Back">&larr;</button>
+            <button class="spotify-hint__btn spotify-hint__btn--right" type="button">OK</button>
+          </div>
+        </div>
       </div>
       <svg class="spotify-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
         <path d="M 8 6 C 8 50, 76 28, 76 72"
@@ -95,21 +101,38 @@ const SpotifyHintModule = (function() {
       opacity: 0.78;
     `;
 
-    const okBtn = overlay.querySelector('.spotify-hint__ok');
-    okBtn.style.cssText = `
-      display: block;
+    const footer = overlay.querySelector('.spotify-hint__footer');
+    footer.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-top: 10px;
-      margin-left: auto;
-      background: rgba(255, 255, 255, 0.16);
-      color: rgba(255, 255, 255, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 8px;
-      padding: 4px 14px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-      pointer-events: auto;
+      gap: 10px;
     `;
+
+    const counter = overlay.querySelector('.spotify-hint__counter');
+    counter.style.cssText = `
+      font-size: 11px;
+      opacity: 0.6;
+    `;
+
+    overlay.querySelectorAll('.spotify-hint__btn').forEach((b) => {
+      b.style.cssText = `
+        background: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 8px;
+        padding: 4px 12px;
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        pointer-events: auto;
+        margin-left: 6px;
+      `;
+    });
+
+    const leftBtn = overlay.querySelector('.spotify-hint__btn--left');
+    const rightBtn = overlay.querySelector('.spotify-hint__btn--right');
 
     const arrow = overlay.querySelector('.spotify-hint__arrow');
     arrow.style.cssText = `
@@ -130,18 +153,26 @@ const SpotifyHintModule = (function() {
     });
 
     const FADE_MS = 200;
-    okBtn.addEventListener('click', () => {
+    const fadeAnd = (next) => {
       overlay.style.transition = `opacity ${FADE_MS}ms ease`;
       overlay.style.opacity = '0';
-      setTimeout(() => overlay.remove(), FADE_MS);
-    });
+      setTimeout(() => {
+        overlay.remove();
+        next && next();
+      }, FADE_MS);
+    };
+    leftBtn.addEventListener('click', () => fadeAnd(() => {
+      if (typeof LayoutHintModule !== 'undefined') LayoutHintModule.show({ force: true });
+    }));
+    rightBtn.addEventListener('click', () => fadeAnd(null));
   };
 
-  const show = (delayMs = 100) => {
-    if (hasSeen()) return;
+  const show = (opts = {}) => {
+    const { force = false, delayMs = 100 } = typeof opts === 'number' ? { delayMs: opts } : opts;
+    if (!force && hasSeen()) return;
     if (!elements.spotifyBtn) return;
     setTimeout(() => {
-      if (hasSeen()) return;
+      if (!force && hasSeen()) return;
       showHint();
       markSeen();
     }, delayMs);

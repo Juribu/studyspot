@@ -36,11 +36,11 @@ All styles live in a single `style.css`. It is large (~2,200 lines) and section-
 │   ├── background.js           # Image + video background picker
 │   ├── quotes.js               # Hourly-deterministic quote rotation
 │   ├── layout.js               # Edit mode: drag and resize the 3 main blocks
-│   ├── intro-hint.js           # First-visit fading bubble pointing to the fullscreen button
-│   ├── stats-hint.js           # One-time bubble pointing to the stats button (triggered by timer popup OK or by layout-hint chain); OK chains to spotify-hint
-│   ├── bg-hint.js              # One-time bubble pointing to the background button; chained after intro-hint OK, chains to layout-hint on OK
-│   ├── layout-hint.js          # One-time bubble pointing to the edit-layout button; chained after bg-hint OK, chains to stats-hint on OK
-│   └── spotify-hint.js         # One-time bubble pointing to the Spotify source-toggle; final step in the onboarding chain
+│   ├── intro-hint.js           # First-visit fading bubble pointing to the fullscreen button (step 1/4 of the onboarding chain)
+│   ├── stats-hint.js           # One-time bubble pointing to the stats button, triggered only by timer popup after first pomodoro; standalone OK button (NOT part of the numbered onboarding chain)
+│   ├── bg-hint.js              # Step 2/4. Chained after intro-hint
+│   ├── layout-hint.js          # Step 3/4. Chained after bg-hint; chains directly to spotify-hint (skips stats-hint)
+│   └── spotify-hint.js         # Step 4/4. Final step; right button reads "OK"
 ├── assets/
 │   ├── icons/                  # SVG icons used by buttons (timer_settings, play, prev, next, mood, sound, background, stats, fullscreen, etc.)
 │   ├── images/                 # Background images (street, rain, coffee, forrest, library) + lofi.png thumbnail
@@ -105,6 +105,7 @@ After any update, echo back the exact diff (added/removed/changed lines) in the 
 - **No build, no node, no package manager.** Don't suggest npm/yarn installs, don't add bundling, don't reach for TypeScript or React. The "no setup" property is a feature.
 - **`js/main.js` is the source of truth for module load order.** If you add a new `<script>` to `index.html`, also add it to `main.js`'s `modules` array so it gets `init()`-ed.
 - **Modules talk via globals, not imports.** Use `typeof OtherModule !== 'undefined' && OtherModule.method(...)` when one module calls another, mirroring the existing pattern in `timer.js → StudyStatsModule`.
+- **Onboarding hint chain is intro → bg → layout → spotify (4 steps).** Each step shows an "N/4" counter and left/right arrow nav; left navigates back, right navigates forward, and step 4's right button reads "OK". Each hint's `show()` accepts `{ force: true }` so going back can re-display a hint that's already marked seen. **Stats-hint is intentionally outside this chain** — it's only triggered by `timer.js` after the first completed pomodoro and keeps a single OK button.
 - **Spotify embed has fixed render heights** (~152px compact, ~352px+ large). Stretching to anything in between leaves a dark blank band inside the iframe — `style.css` shrinks the picker column in Spotify mode (via `:has()`) so the music-section doesn't grow past the embed's natural height. Don't undo this without thinking.
 - **Spotify Premium required for full-track playback**; free accounts get 30-second previews. Login happens entirely inside Spotify's iframe — StudySpot never touches credentials.
 - **SoundCloud Widget API is loaded by URL at runtime.** `js/music.js` injects the `<script>` and instantiates `SC.Widget(iframe)` after `READY`. If `SC` is undefined, the script tag failed to load (network/blocker).
