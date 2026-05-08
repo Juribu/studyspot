@@ -43,8 +43,12 @@ const IntroHintModule = (function() {
    */
   const positionHint = (overlay, btn) => {
     const r = btn.getBoundingClientRect();
-    const rightOffset = Math.max(20, window.innerWidth - r.right - 4);
-    const bottomOffset = Math.max(20, window.innerHeight - r.top + 8);
+    const buttonCenterX = (r.left + r.right) / 2;
+    // Arrow tip sits ~17px in from the overlay's right edge (viewBox x=76 of 90,
+    // 70px svg width, plus 6px margin-right). Anchor the tip over button center.
+    const TIP_INSET = 17;
+    const rightOffset = Math.max(20, window.innerWidth - buttonCenterX - TIP_INSET);
+    const bottomOffset = Math.max(20, window.innerHeight - r.top + 10);
     overlay.style.right = rightOffset + 'px';
     overlay.style.bottom = bottomOffset + 'px';
   };
@@ -64,10 +68,10 @@ const IntroHintModule = (function() {
         <div class="intro-hint__sub">Click the icon, or press <kbd>${shortcut}</kbd></div>
       </div>
       <svg class="intro-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
-        <path d="M 8 4 C 8 50, 30 70, 76 72"
+        <path d="M 8 6 C 8 50, 76 28, 76 72"
               fill="none" stroke="rgba(255,255,255,0.95)"
               stroke-width="2" stroke-linecap="round" />
-        <path d="M 68 64 L 78 73 L 70 78"
+        <path d="M 69 64 L 76 74 L 83 64"
               fill="none" stroke="rgba(255,255,255,0.95)"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
@@ -144,8 +148,8 @@ const IntroHintModule = (function() {
     });
 
     // Linger briefly, then fade away over ~2s and remove.
-    const LINGER_MS = 2200;
-    const FADE_MS = 2000;
+    const LINGER_MS = 2500;
+    const FADE_MS = 1500;
     setTimeout(() => {
       overlay.style.transition = `opacity ${FADE_MS}ms ease`;
       overlay.style.opacity = '0';
