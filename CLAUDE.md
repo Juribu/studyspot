@@ -35,7 +35,8 @@ All styles live in a single `style.css`. It is large (~2,200 lines) and section-
 │   ├── music.js                # Source toggle (SoundCloud Widget API + Spotify embed), playlist/mood/genre/custom-link pickers
 │   ├── background.js           # Image + video background picker
 │   ├── quotes.js               # Hourly-deterministic quote rotation
-│   └── layout.js               # Edit mode: drag and resize the 3 main blocks
+│   ├── layout.js               # Edit mode: drag and resize the 3 main blocks
+│   └── intro-hint.js           # First-visit fading bubble pointing to the fullscreen button
 ├── assets/
 │   ├── icons/                  # SVG icons used by buttons (timer_settings, play, prev, next, mood, sound, background, stats, fullscreen, etc.)
 │   ├── images/                 # Background images (street, rain, coffee, forrest, library) + lofi.png thumbnail
@@ -61,7 +62,7 @@ const SomeModule = (function() {
 Don't deviate from this — `js/main.js` calls `.init()` on each module by global name and silently skips any that aren't defined.
 
 **localStorage keys** are namespaced with the `studyspot_` prefix:
-- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`, `studyspot_layout`
+- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`, `studyspot_layout`, `studyspot_intro_hint_seen`
 - One legacy key (`studyspot.background` with a dot) is migrated on read in `js/background.js` — pattern to follow if you ever rename a key.
 
 **Reads from `localStorage` are wrapped in try/catch** and fall back to defaults. Writes are not (they should rarely throw). Match this.

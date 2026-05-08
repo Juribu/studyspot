@@ -13,7 +13,8 @@ const StudySpotApp = (function() {
     { name: 'MusicModule', module: () => typeof MusicModule !== 'undefined' && MusicModule },
     { name: 'BackgroundModule', module: () => typeof BackgroundModule !== 'undefined' && BackgroundModule },
     { name: 'QuoteModule', module: () => typeof QuoteModule !== 'undefined' && QuoteModule },
-    { name: 'LayoutModule', module: () => typeof LayoutModule !== 'undefined' && LayoutModule }
+    { name: 'LayoutModule', module: () => typeof LayoutModule !== 'undefined' && LayoutModule },
+    { name: 'IntroHintModule', module: () => typeof IntroHintModule !== 'undefined' && IntroHintModule }
   ];
 
   /**
