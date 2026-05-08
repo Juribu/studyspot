@@ -36,7 +36,11 @@ All styles live in a single `style.css`. It is large (~2,200 lines) and section-
 │   ├── background.js           # Image + video background picker
 │   ├── quotes.js               # Hourly-deterministic quote rotation
 │   ├── layout.js               # Edit mode: drag and resize the 3 main blocks
-│   └── intro-hint.js           # First-visit fading bubble pointing to the fullscreen button
+│   ├── intro-hint.js           # First-visit fading bubble pointing to the fullscreen button
+│   ├── stats-hint.js           # One-time bubble pointing to the stats button (triggered by timer popup OK or by layout-hint chain); OK chains to spotify-hint
+│   ├── bg-hint.js              # One-time bubble pointing to the background button; chained after intro-hint OK, chains to layout-hint on OK
+│   ├── layout-hint.js          # One-time bubble pointing to the edit-layout button; chained after bg-hint OK, chains to stats-hint on OK
+│   └── spotify-hint.js         # One-time bubble pointing to the Spotify source-toggle; final step in the onboarding chain
 ├── assets/
 │   ├── icons/                  # SVG icons used by buttons (timer_settings, play, prev, next, mood, sound, background, stats, fullscreen, etc.)
 │   ├── images/                 # Background images (street, rain, coffee, forrest, library) + lofi.png thumbnail
@@ -62,7 +66,7 @@ const SomeModule = (function() {
 Don't deviate from this — `js/main.js` calls `.init()` on each module by global name and silently skips any that aren't defined.
 
 **localStorage keys** are namespaced with the `studyspot_` prefix:
-- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`, `studyspot_layout`, `studyspot_intro_hint_seen`
+- `studyspot_tasks`, `studyspot_sessions`, `studyspot_daily_goal`, `studyspot_timer_durations`, `studyspot_background`, `studyspot_music_source`, `studyspot_music_selections`, `studyspot_spotify_intro_seen`, `studyspot_layout`, `studyspot_intro_hint_seen`, `studyspot_stats_hint_seen`, `studyspot_bg_hint_seen`, `studyspot_layout_hint_seen`, `studyspot_spotify_hint_seen`
 - One legacy key (`studyspot.background` with a dot) is migrated on read in `js/background.js` — pattern to follow if you ever rename a key.
 
 **Reads from `localStorage` are wrapped in try/catch** and fall back to defaults. Writes are not (they should rarely throw). Match this.

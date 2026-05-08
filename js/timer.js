@@ -156,6 +156,9 @@ const TimerModule = (function() {
         alarmAudio = null;
       }
       popup.remove();
+      if (currentMode === 'pomodoro' && typeof StatsHintModule !== 'undefined') {
+        StatsHintModule.maybeShow();
+      }
     });
 
     // Handle button hover effect

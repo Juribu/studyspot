@@ -14,7 +14,11 @@ const StudySpotApp = (function() {
     { name: 'BackgroundModule', module: () => typeof BackgroundModule !== 'undefined' && BackgroundModule },
     { name: 'QuoteModule', module: () => typeof QuoteModule !== 'undefined' && QuoteModule },
     { name: 'LayoutModule', module: () => typeof LayoutModule !== 'undefined' && LayoutModule },
-    { name: 'IntroHintModule', module: () => typeof IntroHintModule !== 'undefined' && IntroHintModule }
+    { name: 'IntroHintModule', module: () => typeof IntroHintModule !== 'undefined' && IntroHintModule },
+    { name: 'StatsHintModule', module: () => typeof StatsHintModule !== 'undefined' && StatsHintModule },
+    { name: 'BgHintModule', module: () => typeof BgHintModule !== 'undefined' && BgHintModule },
+    { name: 'LayoutHintModule', module: () => typeof LayoutHintModule !== 'undefined' && LayoutHintModule },
+    { name: 'SpotifyHintModule', module: () => typeof SpotifyHintModule !== 'undefined' && SpotifyHintModule }
   ];
 
   /**

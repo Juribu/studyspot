@@ -1,14 +1,15 @@
 /**
- * First-visit Intro Hint Module
- * Shows a one-time fading bubble pointing to the fullscreen button.
- * Persisted via STORAGE_KEY so it only ever appears once per browser.
- * @module IntroHintModule
+ * Stats Hint Module
+ * Shows a one-time fading bubble pointing to the stats button after the
+ * user's first pomodoro session has been recorded. Persisted via STORAGE_KEY
+ * so it only ever appears once per browser.
+ * @module StatsHintModule
  */
-const IntroHintModule = (function() {
-  const STORAGE_KEY = 'studyspot_intro_hint_seen';
+const StatsHintModule = (function() {
+  const STORAGE_KEY = 'studyspot_stats_hint_seen';
 
   const elements = {
-    fullscreenBtn: document.querySelector('.full-screen')
+    statsBtn: document.getElementById('stats-btn')
   };
 
   const hasSeen = () => {
@@ -21,31 +22,12 @@ const IntroHintModule = (function() {
   };
 
   /**
-   * Pick a sensible OS-specific fullscreen shortcut to surface.
-   * The app's own Ctrl+F binding works everywhere, but most users reach
-   * for the OS/browser-native combo first, so we show that instead.
-   */
-  const detectShortcut = () => {
-    const platform = (
-      (navigator.userAgentData && navigator.userAgentData.platform) ||
-      navigator.platform ||
-      navigator.userAgent ||
-      ''
-    ).toLowerCase();
-    if (/mac|iphone|ipad|ipod/.test(platform)) return 'Fn + F';
-    return 'F11';
-  };
-
-  /**
    * Position the hint so its arrow tip lands just above-left of the button.
-   * Uses fixed positioning anchored from the right/bottom of the viewport,
-   * since the bottom-section already lives there.
+   * Mirrors intro-hint.js positioning so the bubble feels consistent.
    */
   const positionHint = (overlay, btn) => {
     const r = btn.getBoundingClientRect();
     const buttonCenterX = (r.left + r.right) / 2;
-    // Arrow tip sits ~17px in from the overlay's right edge (viewBox x=76 of 90,
-    // 70px svg width, plus 6px margin-right). Anchor the tip over button center.
     const TIP_INSET = 17;
     const rightOffset = Math.max(20, window.innerWidth - buttonCenterX - TIP_INSET);
     const bottomOffset = Math.max(20, window.innerHeight - r.top + 10);
@@ -54,21 +36,19 @@ const IntroHintModule = (function() {
   };
 
   const showHint = () => {
-    const btn = elements.fullscreenBtn;
+    const btn = elements.statsBtn;
     if (!btn) return;
 
-    const shortcut = detectShortcut();
-
     const overlay = document.createElement('div');
-    overlay.id = 'intro-hint';
+    overlay.id = 'stats-hint';
     overlay.setAttribute('aria-hidden', 'true');
     overlay.innerHTML = `
-      <div class="intro-hint__bubble">
-        <div class="intro-hint__title">Full screen for best experience</div>
-        <div class="intro-hint__sub">Click the icon, or press <kbd>${shortcut}</kbd></div>
-        <button class="intro-hint__ok" type="button">OK</button>
+      <div class="stats-hint__bubble">
+        <div class="stats-hint__title">Your study sessions are logged here</div>
+        <div class="stats-hint__sub">Click the chart icon any time to see your stats</div>
+        <button class="stats-hint__ok" type="button">OK</button>
       </div>
-      <svg class="intro-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
+      <svg class="stats-hint__arrow" viewBox="0 0 90 80" aria-hidden="true">
         <path d="M 8 6 C 8 50, 76 28, 76 72"
               fill="none" stroke="rgba(255,255,255,0.95)"
               stroke-width="2" stroke-linecap="round" />
@@ -91,7 +71,7 @@ const IntroHintModule = (function() {
       font-family: 'Inter', sans-serif;
     `;
 
-    const bubble = overlay.querySelector('.intro-hint__bubble');
+    const bubble = overlay.querySelector('.stats-hint__bubble');
     bubble.style.cssText = `
       background-color: rgba(0, 0, 0, 0.85);
       color: rgba(255, 255, 255, 0.96);
@@ -104,7 +84,7 @@ const IntroHintModule = (function() {
       pointer-events: auto;
     `;
 
-    const okBtn = overlay.querySelector('.intro-hint__ok');
+    const okBtn = overlay.querySelector('.stats-hint__ok');
     okBtn.style.cssText = `
       display: block;
       margin-top: 10px;
@@ -120,7 +100,7 @@ const IntroHintModule = (function() {
       pointer-events: auto;
     `;
 
-    const title = overlay.querySelector('.intro-hint__title');
+    const title = overlay.querySelector('.stats-hint__title');
     title.style.cssText = `
       font-size: 14px;
       font-weight: 600;
@@ -128,26 +108,13 @@ const IntroHintModule = (function() {
       letter-spacing: 0.1px;
     `;
 
-    const sub = overlay.querySelector('.intro-hint__sub');
+    const sub = overlay.querySelector('.stats-hint__sub');
     sub.style.cssText = `
       font-size: 12px;
       opacity: 0.78;
     `;
 
-    const kbd = overlay.querySelector('kbd');
-    if (kbd) {
-      kbd.style.cssText = `
-        font-family: inherit;
-        background: rgba(255, 255, 255, 0.14);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        border-radius: 4px;
-        padding: 1px 6px;
-        font-size: 11px;
-        margin-left: 2px;
-      `;
-    }
-
-    const arrow = overlay.querySelector('.intro-hint__arrow');
+    const arrow = overlay.querySelector('.stats-hint__arrow');
     arrow.style.cssText = `
       width: 70px;
       height: 62px;
@@ -155,11 +122,11 @@ const IntroHintModule = (function() {
       margin-right: 6px;
     `;
 
-    document.body.appendChild(overlay);
+    const host = document.fullscreenElement || document.body;
+    host.appendChild(overlay);
 
     requestAnimationFrame(() => {
       positionHint(overlay, btn);
-      // Two RAFs so the initial layout settles before we trigger the fade-in.
       requestAnimationFrame(() => {
         overlay.style.opacity = '1';
       });
@@ -171,26 +138,34 @@ const IntroHintModule = (function() {
       overlay.style.opacity = '0';
       setTimeout(() => {
         overlay.remove();
-        if (typeof BgHintModule !== 'undefined') {
-          BgHintModule.show();
+        if (typeof SpotifyHintModule !== 'undefined') {
+          SpotifyHintModule.show();
         }
       }, FADE_MS);
     });
   };
 
+  /**
+   * Try to surface the hint. No-op if already seen or button missing.
+   * Safe to call multiple times — only shows once per browser.
+   */
+  const maybeShow = (delayMs = 100) => {
+    if (hasSeen()) return;
+    if (!elements.statsBtn) return;
+    setTimeout(() => {
+      if (hasSeen()) return;
+      showHint();
+      markSeen();
+    }, delayMs);
+  };
+
   return {
     /**
-     * Shows the hint once on the first visit only. No-op afterwards.
+     * No boot-time auto-show. The hint is only surfaced when TimerModule
+     * calls maybeShow() after the user closes the "Time's Up" popup
+     * following a completed pomodoro.
      */
-    init() {
-      if (hasSeen()) return;
-      if (!elements.fullscreenBtn) return;
-      // Small delay so the rest of the UI paints first; otherwise the
-      // bubble can momentarily compete with bottom-section layout shifts.
-      setTimeout(() => {
-        showHint();
-        markSeen();
-      }, 700);
-    }
+    init() {},
+    maybeShow
   };
 })();
