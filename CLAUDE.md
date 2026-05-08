@@ -9,6 +9,7 @@ StudySpot is a single-page productivity dashboard you keep open on a laptop whil
 - **External runtime deps loaded by URL only**:
   - SoundCloud Widget API: `https://w.soundcloud.com/player/api.js` (loaded dynamically by `js/music.js`)
   - Spotify embeds: `https://open.spotify.com/embed/playlist/<id>` iframes
+  - NetEase Music outchain embeds: `https://music.163.com/outchain/player?type=<0|2>&id=<id>` iframes (loaded into the same `#spotify-embed` iframe when the user pastes a `music.163.com` link)
   - Google Fonts (Inter): loaded in `index.html` `<head>`
 - **Persistence**: `localStorage` only. No backend, no API calls outside the third-party embeds above.
 - **Deployment**: GitHub Pages (the live site is served straight from this repo).
@@ -108,6 +109,7 @@ After any update, echo back the exact diff (added/removed/changed lines) in the 
 - **Onboarding hint chain is intro → bg → layout → stats → spotify (5 steps).** Each step shows an "N/5" counter and left/right arrow nav; left navigates back, right navigates forward, and step 5's right button reads "OK". Each hint's `show()` accepts `{ force: true }` so going back can re-display a hint that's already marked seen. **Stats-hint has two UIs**: when invoked via `show({ force: true })` from the chain it renders the standard prev/next nav; when invoked via `maybeShow()` from `timer.js` after the first completed pomodoro it renders only an OK button with no transition. The two UIs use independent flags (`studyspot_stats_hint_seen` for standalone, `studyspot_stats_hint_chain_seen` for chain) so each fires once on its own schedule — walking the onboarding chain does not suppress the post-pomodoro hint.
 - **Spotify embed has fixed render heights** (~152px compact, ~352px+ large). Stretching to anything in between leaves a dark blank band inside the iframe — `style.css` shrinks the picker column in Spotify mode (via `:has()`) so the music-section doesn't grow past the embed's natural height. Don't undo this without thinking.
 - **Spotify Premium required for full-track playback**; free accounts get 30-second previews. Login happens entirely inside Spotify's iframe — StudySpot never touches credentials.
+- **NetEase Music share links** pasted into the Spotify input bar are detected by `parseNeteaseLink` in `js/music.js` and loaded into the same embed iframe via the outchain URL. Selection persists with `provider: 'netease'` + `kind: 'playlist'|'song'`. Playback is **geo-restricted to mainland China** — outside China the iframe still renders but tracks won't play.
 - **SoundCloud Widget API is loaded by URL at runtime.** `js/music.js` injects the `<script>` and instantiates `SC.Widget(iframe)` after `READY`. If `SC` is undefined, the script tag failed to load (network/blocker).
 - **Layout edit mode persists** via `studyspot_layout`. Block geometry is restored at boot (blocks come up `position: fixed` with their saved width/height/left/top); the reset button is the only way back to the default flex layout.
 - **`align-items: stretch` on `.music-section`** is what makes the music-player and picker-column the same height. Beware when changing one side's height.

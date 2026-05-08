@@ -64,6 +64,13 @@ const MusicModule = (function() {
   const buildSpotifyEmbedUrl = (id) =>
     `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
 
+  /** NetEase outchain embed: type=0 playlist, type=2 song, height ~430 for playlist. */
+  const buildNeteaseEmbedUrl = (id, kind = 'playlist') => {
+    const type = kind === 'song' ? 2 : 0;
+    const height = kind === 'song' ? 86 : 430;
+    return `https://music.163.com/outchain/player?type=${type}&id=${id}&auto=0&height=${height}`;
+  };
+
   /**
    * Extracts a Spotify playlist ID from a sharable link or URI.
    * Accepts open.spotify.com/playlist/<id>, the intl-XX variant, and spotify:playlist:<id>.
@@ -73,6 +80,21 @@ const MusicModule = (function() {
     if (!input) return null;
     const match = String(input).trim().match(/playlist[:/]([A-Za-z0-9]+)/);
     return match ? match[1] : null;
+  };
+
+  /**
+   * Extracts a NetEase Music ID + kind from a share link.
+   * Accepts: music.163.com/#/playlist?id=<n>, music.163.com/playlist?id=<n>,
+   * music.163.com/#/song?id=<n>, music.163.com/song?id=<n>.
+   * Returns { id, kind: 'playlist'|'song' } or null.
+   */
+  const parseNeteaseLink = (input) => {
+    if (!input) return null;
+    const str = String(input).trim();
+    if (!/music\.163\.com/i.test(str)) return null;
+    const kindMatch = str.match(/(playlist|song)\?[^#]*\bid=(\d+)/i);
+    if (!kindMatch) return null;
+    return { kind: kindMatch[1].toLowerCase(), id: kindMatch[2] };
   };
 
   /**
@@ -416,11 +438,16 @@ const MusicModule = (function() {
   };
 
   /**
-   * Loads a Spotify playlist into the embed iframe.
-   * `sel` is a selection object: { type: 'sample'|'custom', value: <playlistId> }.
+   * Loads a playlist into the embed iframe — Spotify by default,
+   * NetEase when the selection's `provider` is 'netease'.
+   * `sel` is { type: 'sample'|'custom', value: <id>, provider?: 'spotify'|'netease', kind?: 'playlist'|'song' }.
    */
   const loadSpotifyPlaylist = (sel) => {
     if (!elements.spotifyEmbed) return;
+    if (sel?.provider === 'netease' && sel.value) {
+      elements.spotifyEmbed.src = buildNeteaseEmbedUrl(sel.value, sel.kind);
+      return;
+    }
     const id = sel?.value || SAMPLE_SPOTIFY_ID;
     elements.spotifyEmbed.src = buildSpotifyEmbedUrl(id);
   };
@@ -447,7 +474,8 @@ const MusicModule = (function() {
         // Spotify only persists user-pasted links now; legacy genre/mood selections
         // are silently dropped and the user falls back to the sample playlist.
         if (savedSels.spotify && savedSels.spotify.type === 'custom' && savedSels.spotify.value) {
-          selections.spotify = savedSels.spotify;
+          // Default missing provider to 'spotify' for legacy entries
+          selections.spotify = { provider: 'spotify', ...savedSels.spotify };
         }
       }
     } catch {}
@@ -506,10 +534,15 @@ const MusicModule = (function() {
    *  so users can see / edit / copy what's currently playing. */
   const reflectCurrentSpotifyInInput = () => {
     if (!elements.spotifyLinkInput) return;
-    const isCustom = selections.spotify?.type === 'custom' && !!selections.spotify.value;
-    elements.spotifyLinkInput.value = isCustom
-      ? `https://open.spotify.com/playlist/${selections.spotify.value}`
-      : '';
+    const sel = selections.spotify;
+    const isCustom = sel?.type === 'custom' && !!sel.value;
+    if (!isCustom) {
+      elements.spotifyLinkInput.value = '';
+      return;
+    }
+    elements.spotifyLinkInput.value = sel.provider === 'netease'
+      ? `https://music.163.com/#/${sel.kind || 'playlist'}?id=${sel.value}`
+      : `https://open.spotify.com/playlist/${sel.value}`;
   };
 
   /**
@@ -645,12 +678,23 @@ const MusicModule = (function() {
    * persists it as the current Spotify selection so it survives reload.
    */
   const loadCustomSpotifyPlaylist = () => {
-    const id = parseSpotifyPlaylistId(elements.spotifyLinkInput?.value);
+    const raw = elements.spotifyLinkInput?.value;
+    const netease = parseNeteaseLink(raw);
+    if (netease) {
+      selections.spotify = { type: 'custom', provider: 'netease', kind: netease.kind, value: netease.id };
+      saveSelections();
+      loadSpotifyPlaylist(selections.spotify);
+      reflectCurrentSpotifyInInput();
+      elements.spotifyLinkInput?.blur();
+      showMusicNotification(null, null, 'Your playlist', `NetEase ${netease.kind}`);
+      return;
+    }
+    const id = parseSpotifyPlaylistId(raw);
     if (!id) {
       flashSpotifyLinkError();
       return;
     }
-    selections.spotify = { type: 'custom', value: id };
+    selections.spotify = { type: 'custom', provider: 'spotify', value: id };
     saveSelections();
     loadSpotifyPlaylist(selections.spotify);
     reflectCurrentSpotifyInInput();
