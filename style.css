@@ -380,18 +380,93 @@ body::after {
   width: 100%;
   font-variant-numeric: tabular-nums;
   text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+#time:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+#time.running {
+  cursor: default;
+}
+
+#time.running:hover {
+  background-color: transparent;
+}
+
+.time-edit-input {
+  width: 2.4em;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 0;
+  outline: none;
+}
+
+.time-edit-input::-webkit-outer-spin-button,
+.time-edit-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.time-edit-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .timer-controls{
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: clamp(6px, 0.8vw, 10px);
 }
 
 #start{
-  width: clamp(70px, 8vw, 100px);
+  width: clamp(110px, 12vw, 150px);
   height: clamp(36px, 4vh, 48px);
   text-align: center;
+  font-size: clamp(18px, 1.8vw, 24px);
+}
+
+#start.icon-mode {
+  width: clamp(36px, 4vh, 48px);
+  padding: 0;
+  border-radius: 50%;
+}
+
+#start.icon-mode svg,
+#end-early svg {
+  width: 45%;
+  height: 45%;
+}
+
+#end-early {
+  width: clamp(36px, 4vh, 48px);
+  height: clamp(36px, 4vh, 48px);
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#end-early:hover,
+#start.icon-mode:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: white;
+}
+
+#end-early[hidden] {
+  display: none;
 }
 
 .pomodoro-timer button{
@@ -416,96 +491,6 @@ button{
 
 button:hover {
   transform: translateY(-1px);
-}
-
-#timer-setting{
-  border: none;
-  border-radius: 50%;
-}
-
-#timer-setting img{
-  width: clamp(28px, 3vw, 40px);
-  height: clamp(28px, 3vw, 40px);
-  object-fit: contain;
-}
-
-/* Timer Settings Dropdown */
-.timer-setting {
-  position: relative;
-}
-
-/* Timer settings dropdown uses .dropdown and .dropdown--large classes */
-
-.timer-option {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  padding: clamp(6px, 0.8vw, 10px) clamp(8px, 1vw, 12px);
-  background-color: transparent;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: clamp(14px, 1.2vw, 16px);
-}
-
-.timer-name {
-  font-weight: 500;
-  font-size: clamp(14px, 1.2vw, 16px);
-  color: white;
-  margin-bottom: 4px;
-  text-align: left;
-}
-
-.timer-input-container {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.timer-input {
-  background-color: transparent;
-  border: 1px solid white;
-  border-radius: 6px;
-  padding: 6px 40px 6px 10px;
-  color: white;
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(14px, 1.2vw, 16px);
-  font-weight: 500;
-  width: 90px;
-  text-align: center;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.timer-input:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.8);
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.timer-input::-webkit-outer-spin-button,
-.timer-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.timer-input[type=number] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-.timer-unit {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: clamp(12px, 1vw, 14px);
-  color: white;
-  font-weight: 400;
-  pointer-events: none;
 }
 
 /* ==========================================================================

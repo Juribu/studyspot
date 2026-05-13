@@ -62,37 +62,14 @@
                 <div class="pomodoro-timer">
                     <!-- Left side of timer: display and controls -->
                     <div class="timer-left">
-                        <h2 id="time">25:00</h2>
+                        <h2 id="time" title="Click to change duration (not while running)">25:00</h2>
                         <div class="timer-controls">
                             <button id="start">Start</button>
-                            <!-- Timer Settings-->
-                            <div class="timer-setting">
-                                <button id="timer-setting"><img src="assets/icons/timer_settings.svg" alt="timer setting"></button>
-                                <!-- Timer settings dropdown menu -->
-                                <div class="dropdown dropdown--large timer-settings-dropdown">
-                                    <div class="timer-option" data-timer="pomodoro">
-                                        <span class="timer-name">Pomodoro</span>
-                                        <div class="timer-input-container">
-                                            <input type="number" class="timer-input" value="25" min="1" max="120" data-timer="pomodoro">
-                                            <span class="timer-unit">min</span>
-                                        </div>
-                                    </div>
-                                    <div class="timer-option" data-timer="short-break">
-                                        <span class="timer-name">Short Break</span>
-                                        <div class="timer-input-container">
-                                            <input type="number" class="timer-input" value="5" min="1" max="60" data-timer="short-break">
-                                            <span class="timer-unit">min</span>
-                                        </div>
-                                    </div>
-                                    <div class="timer-option" data-timer="long-break">
-                                        <span class="timer-name">Long Break</span>
-                                        <div class="timer-input-container">
-                                            <input type="number" class="timer-input" value="15" min="1" max="120" data-timer="long-break">
-                                            <span class="timer-unit">min</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <button id="end-early" title="End session early" aria-label="End session early" hidden>
+                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <rect x="6" y="6" width="12" height="12" rx="2"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
